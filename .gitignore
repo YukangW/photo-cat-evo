@@ -1,0 +1,8 @@
+# Local Python environment
+.venv/
+
+# API KEY
+.env
+
+# Reference paper and corresponding supporting information
+docs/
