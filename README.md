@@ -28,10 +28,15 @@ prompt ──► plan: ["band gap", "BET surface area", "H2 evolution rate"]
 | `src/PhotoCatEvo/config.py` | Model settings, extraction limits, default request, and file paths |
 | `src/PhotoCatEvo/parameters.json` | Parameter dictionary with aliases, units, plausible ranges, and search terms |
 | `src/PhotoCatEvo/parameters.py` | Parameter lookup and the `list`, `show`, and `add` commands |
-| `src/PhotoCatEvo/units.py` | Parses units as written in papers and standardises results with Pint |
+| `src/PhotoCatEvo/units.py` | Parses units as written in papers (`m2 g−1`, `µmol h-1 g-1`) with Pint, including Pint contexts (eV <-> nm) |
+| `src/PhotoCatEvo/conversions.py` | Conversions that need data from the paper: reference electrodes (+ pH), catalyst-mass normalisation, molar mass ([periodictable](https://pypi.org/project/periodictable/)) |
+| `src/PhotoCatEvo/standardise.py` | Converts one result to its standard unit using `units.py` and `conversions.py` |
+| `src/PhotoCatEvo/collect_papers.py` | Finds open-access photocatalysis papers using the dictionary, saves them to a spreadsheet and downloads the PDFs |
+| `src/PhotoCatEvo/sources.py` | Searches OpenAlex and arXiv; finds the PubMed Central open-access copy of a paper |
+| `src/PhotoCatEvo/journals.json` | Open-access journals to search (checked against OpenAlex each run). Add your own |
 | `src/PhotoCatEvo/pdf_to_text.py` | Converts a PDF and optional supporting information to text |
 | `src/PhotoCatEvo/llm.py` | Calls the model endpoint and retries transient failures |
-| `src/PhotoCatEvo/tools.py` | Searches paper text, checks evidence and values, and saves results |
+| `src/PhotoCatEvo/tools.py` | Searches paper text, checks evidence and values, converts units, looks up molar masses, and saves results |
 | `tests/` | Tests for extraction, evidence checks, sample handling, and unit conversion |
 | `examples/text/` | Converted text from two example papers |
 | `examples/results/` | Example extraction results in CSV and JSON, with tool-call traces |
@@ -67,6 +72,9 @@ An entry looks like this (every field except the name is optional):
 }
 ```
 
+Optional fields for conversions: `standard_unit` (convert to this instead of `unit`), `contexts`
+(e.g. `["spectroscopy"]`), `reference` (e.g. `"NHE"`, for potentials) and `species` (e.g. `"H2"`, for rates).
+
 Add entries by editing `src/PhotoCatEvo/parameters.json` or by running the dictionary module from the repository root.
 
 ```bash
@@ -77,17 +85,78 @@ uv run python -m PhotoCatEvo.parameters add "zeta potential" --unit mV --range -
 
 ## Unit conversion and standardised units
 
-After all items are extracted, a final step converts every value, range and error with Pint to a standard unit
-for its kind of measurement, e.g. `6.0 mmol g−1 h−1` -> `6000 µmol g-1 h-1`, `38 Å` -> `3.8 nm`.
-The values exactly as written in the paper stay in `value` / `unit`; the converted ones go in the
-`standard_*` columns.
+After all items are extracted, a final step converts every value, range and error to a standard unit for
+its kind of measurement. The values exactly as written in the paper stay in `value` / `unit`; the converted
+ones go in the `standard_*` columns, and `conversion_note` says what was done.
 
-- The standard unit is the dictionary entry's `unit` (or `standard_unit`, if you set one).
-- Items not in the dictionary are converted to the SI base unit (e.g. `ns` -> `s`); dimensionless values and
-  `%` are kept as they are.
-- The range check (`check_plausible`) also uses Pint, so a value in mmol is compared correctly with a range in µmol.
-- During extraction the agent also has a `convert_unit` tool (e.g. `5e-9 m` -> `5 nm`) for comparing values
-  given in different units. It still saves values as written; standardising is done afterwards in code.
+The standard unit is the dictionary entry's `unit` (or `standard_unit`). Items not in the dictionary go to the
+SI base unit (e.g. `ns` -> `s`); dimensionless values and `%` are kept as they are. Conversions are tried in order:
+
+| Kind | Example | How |
+|---|---|---|
+| Plain unit change | `6.0 mmol g−1 h−1` -> `6000 µmol g-1 h-1`, `38 Å` -> `3.8 nm` | Pint |
+| Different kinds of quantity | `455.8 nm` -> `2.72 eV`; `1.94 eV vs. NHE` -> `1.94 V vs. NHE` | Pint contexts, only if the entry allows them (`contexts`) |
+| Reference electrodes | `-0.4 V vs. Ag/AgCl` -> `-0.203 V vs. NHE`; `V vs. RHE` -> `V vs. NHE` | `conversions.py`, entry `reference`; RHE needs the **pH** |
+| Per gram of catalyst | `300 µmol h-1` -> `6000 µmol g-1 h-1` | `conversions.py`; needs the **catalyst mass** |
+| Mass <-> moles of product | `1 mg g-1 h-1` H2 -> `496 µmol g-1 h-1` | molar mass from `periodictable`, entry `species` |
+
+**Values needed from the paper.** If a conversion needs the pH or the catalyst mass, the agent runs once more to
+extract it (with the same evidence checks), then converts. These extra results appear as their own rows with
+`supporting_for` saying which item they were needed for. If you asked for them in the prompt, that result is reused.
+If the value is not in the paper, the item is left unconverted and `conversion_note` says what was missing.
+
+Ranges and errors are converted too. When a conversion is not linear (eV -> nm is 1/x) the range order and
+`<`/`>` are flipped, and errors are propagated around the value (|f(x+e) - f(x-e)| / 2).
+
+Pint contexts available: `spectroscopy` (E = hc/λ: eV, nm, cm⁻¹, Hz), `boltzmann` (E = k_B·T), and `electron`
+(E = e·V, so "eV vs. NHE" is read as volts). They are only used when the dictionary entry lists them, so a
+wavelength is never turned into an energy by accident.
+
+During extraction the agent can also call `convert_unit` (including contexts and reference electrodes, with an
+optional pH) and `molar_mass` to compare values. It still saves values as written; standardising is done
+afterwards in code.
+
+Limits: the reference offsets assume 25 °C and saturated KCl for Ag/AgCl unless "3 M KCl" is written; one
+catalyst mass is used per paper; gas volumes (mL h-1) are not converted to moles.
+
+## Collecting open-access papers
+
+`PhotoCatEvo-collect` (`src/PhotoCatEvo/collect_papers.py`) finds open-access photocatalysis papers, lists them in a spreadsheet and downloads the PDFs,
+ready for `PhotoCatEvo`.
+
+```bash
+uv run PhotoCatEvo-collect --parameters "band gap" "H2 evolution rate" --from-year 2022 --per-query 10
+```
+
+1. **Journals**: the names in `src/PhotoCatEvo/journals.json` (RSC Advances, Nanoscale Advances, Catalysts, Nanomaterials,
+   Scientific Reports, Nature Communications, ACS Omega, Advanced Science, ...) are looked up in OpenAlex. Only
+   journals OpenAlex lists as open access are searched; the rest are reported and skipped. `--anywhere` searches
+   every open-access journal instead.
+2. **Queries from the dictionary**: one search per parameter in `src/PhotoCatEvo/parameters.json`, built from its name and
+   aliases, e.g. `(photocatalytic OR photocatalysis OR photocatalyst) AND ("band gap" OR "bandgap" OR ...)`.
+   Entries with `"search_papers": false` (catalyst mass, pH) are left out. Add a parameter to the dictionary and
+   it is searched for next time.
+3. **Sources**: [OpenAlex](https://openalex.org) (open-access journal articles) and [arXiv](https://arxiv.org) (preprints).
+4. **Spreadsheet**: `results/collected_papers.csv` and `.xlsx`, one row per paper: title, authors, year, journal,
+   DOI, licence, which parameters found it, which parameters the abstract mentions, PDF file and where it came from.
+   Each run adds to the same spreadsheet, without duplicates.
+5. **PDFs** go to `papers/collected/`. The PubMed Central open-access copy is tried first (NIH's official dataset,
+   made for automated download), then each open-access copy OpenAlex knows. Some publishers (e.g. Wiley, MDPI)
+   refuse automated downloads even of open-access papers; if no other copy exists the row says so and keeps
+   `landing_url` to open by hand.
+
+Then: `uv run PhotoCatEvo papers/collected/<file>.pdf "Find the band gap ..."`.
+
+Options: `--per-query`, `--from-year`, `--sources openalex arxiv`, `--max-downloads`, `--no-download`,
+`--out`, `--pdf-dir`. Run `uv run PhotoCatEvo-collect --help` for all of them.
+
+**OpenAlex budget**: without a key, everyone on your network shares a small free daily budget (~100 requests;
+a run uses one request per parameter, plus one per journal the first time, which is then cached in `.cache/`).
+For more, get a free key at https://openalex.org/settings/api and `export OPENALEX_API_KEY=...`.
+Only generic search words are sent to these services, never your name or email.
+
+**Licences**: the `license` column shows each paper's licence (e.g. `cc-by`, `cc-by-nc`). Open access means free
+to read and download; check the licence before sharing PDFs or reusing figures.
 
 ## Setup
 
@@ -137,17 +206,18 @@ Results:
 ### Extraction metrics
 
 The terminal and trace JSON report elapsed seconds and input, output, and total tokens for the whole
-paper and for each requested parameter. One parameter's metrics cover all its samples and extraction
-steps, including retry delays. The paper's elapsed time spans the extraction loop, and its token usage
-is the sum of the parameter usages. Loading the input, planning, standardising units, and writing
-results are outside this scope.
+paper, each requested parameter, and each automatic supporting extraction. Each item's metrics cover
+all its samples and extraction steps, including retry delays. The paper's elapsed time covers the
+requested extraction loop plus the time spent extracting supporting values. Its token usage adds up
+both kinds of extraction. Input loading, planning, unit conversion itself, and writing results are
+outside this scope.
 
-The paper summary includes the number of parameters attempted, the number with a verified value or
-range, and the number of distinct sample names with valid results. The top-level `metrics` object
-contains the paper summary. Each `items` entry has its own `metrics` object, including the extraction
-status. Token counts are subtotals when some requests lack usage. If no request reports usage, the
-counts are `null` in JSON and marked unavailable in the terminal. Both levels report usage coverage
-for partial or unavailable totals.
+The paper summary counts requested parameters attempted, requested parameters with a verified value or
+range, and distinct sample names with valid results from those parameters. The top-level `metrics`
+object contains the paper summary. Each `items` entry has its own `metrics` object, including the
+extraction status. Token counts are subtotals when some requests lack usage. If no request reports
+usage, the counts are `null` in JSON and marked unavailable in the terminal. Both levels report usage
+coverage for partial or unavailable totals.
 
 ### Output columns
 
@@ -160,6 +230,7 @@ for partial or unavailable totals.
 | `error` | Uncertainty reported for that data, e.g. `± 0.02`, as written in the paper |
 | `standard_value`, `standard_range`, `standard_error`, `standard_unit` | The same data converted to the standard unit for that kind of measurement (see below) |
 | `conversion_note` | What conversion was done, or why it could not be (e.g. no unit reported, `a.u.`) |
+| `supporting_for` | Items that needed this automatically extracted value for unit conversion |
 | `evidence`, `range_evidence`, `error_evidence` | Exact quotes from the paper; each one is checked against the text, and must contain its numbers |
 
 Values from other papers (quotes with `[12]`, `et al.`, `previously reported`, comparison tables) are

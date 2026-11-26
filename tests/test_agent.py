@@ -5,7 +5,6 @@ Run:  python -m pytest test_agent.py -q
 import json
 from types import SimpleNamespace
 
-import httpx
 import pytest
 
 from PhotoCatEvo import agent, llm
@@ -87,10 +86,11 @@ def test_multi_item_prompt_runs_once_per_item_in_order(monkeypatch):
 
 def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
     targets = [{"name": name} for name in ("BET surface area", "band gap", "quantum yield", "lifetime")]
+    request = SimpleNamespace(method="POST", url="https://example.test", headers={})
     replies = iter([
         (_msg(_Call("set_targets", {"targets": targets})), 9000, 900),
         (_msg(_Call("search_text", {"keyword": "BET"})), 100, 10),
-        llm.APIConnectionError(request=httpx.Request("POST", "https://example.test")),
+        llm.APIConnectionError(request=request),
         (_msg(_Call("save_result", {"value": 45.3, "unit": "m2 g-1", "sample_name": "CN-550",
                                    "evidence": "Its BET surface area was 45.3 m2 g-1",
                                    "other_samples": [{"sample_name": "bulk g-C3N4", "value": 10.2,

@@ -7,6 +7,13 @@ Each entry is keyed by its name and can have:
     unit             the usual unit ("eV"). After extraction every result is converted to this unit
                      (with Pint, see units.py) and shown in the standard_value / standard_unit columns
     standard_unit    optional: convert to this unit instead of "unit" (e.g. unit "nm", standard_unit "m")
+    contexts         optional: Pint contexts allowed for this parameter, e.g. ["spectroscopy"] lets a band gap
+                     given as a wavelength (nm) be converted to eV; ["electron"] lets '1.94 eV vs. NHE' be read as
+                     1.94 V. Available: spectroscopy, boltzmann, electron
+    reference        optional, potentials: standard reference electrode, e.g. "NHE". Potentials vs. other
+                     electrodes are shifted onto it (RHE needs the pH, which the agent extracts)
+    species          optional, rates/amounts: the product's formula, e.g. "H2", so mg can be converted to µmol
+    search_papers    optional: false to leave it out of collect_papers.py searches (e.g. catalyst mass)
     plausible_range  [min, max] in that unit; values outside it are rejected (only checked when the
                      paper uses the same unit)
     search_terms     keywords the agent should try when searching the paper
@@ -25,10 +32,11 @@ import json
 import re
 
 from .config import PARAMETERS_FILE
-from .units import UnitError, parse_unit
+from .conversions import REFERENCES, molar_mass
+from .units import CONTEXTS, UnitError, parse_unit
 
-FIELDS = ("aliases", "unit", "standard_unit", "plausible_range", "search_terms", "methods", "description",
-          "allowed_values", "default_if_missing")
+FIELDS = ("aliases", "unit", "standard_unit", "contexts", "reference", "species", "plausible_range",
+          "search_terms", "methods", "description", "allowed_values", "default_if_missing", "search_papers")
 
 
 # ============================================================ load / save
@@ -63,9 +71,21 @@ def add_parameter(name: str, entry: dict, path: str = PARAMETERS_FILE, overwrite
                 parse_unit(entry[field])
             except UnitError as e:
                 raise ValueError(f"{field}: {e} Write it like 'm2 g-1', 'µmol g-1 h-1' or 'nm'.") from e
+    unknown = [c for c in entry.get("contexts") or [] if c not in CONTEXTS]
+    if unknown:
+        raise ValueError(f"Unknown context(s) {unknown}. Available: {', '.join(CONTEXTS)}.")
+    if entry.get("reference") and entry["reference"] not in REFERENCES:
+        raise ValueError(f"Unknown reference electrode '{entry['reference']}'. Known: {', '.join(REFERENCES)}.")
+    if entry.get("species"):
+        try:
+            molar_mass(entry["species"])
+        except UnitError as e:
+            raise ValueError(f"species: {e}") from e
     rng = entry.get("plausible_range")
     if rng is not None and (len(rng) != 2 or float(rng[0]) > float(rng[1])):
         raise ValueError("plausible_range must be [min, max] with min <= max.")
+    if "search_papers" in entry and not isinstance(entry["search_papers"], bool):
+        raise ValueError("search_papers must be true or false.")
     clean = {k: entry[k] for k in FIELDS if entry.get(k) not in (None, "", [])}
     updated = {**params, name: clean}
     with open(path, "w", encoding="utf-8") as f:
@@ -145,6 +165,9 @@ def describe_for_extractor(name: str, entry: dict) -> str:
     if entry.get("unit"):
         lines.append(f"- Usual unit: {entry['unit']} (still report the unit exactly as the paper writes it; "
                      f"results are converted to {standard_unit_for(entry)} afterwards)")
+    if entry.get("reference"):
+        lines.append(f"- Potentials: save the reference electrode with the unit, e.g. 'V vs. RHE' "
+                     f"(converted to vs. {entry['reference']} afterwards)")
     if entry.get("aliases"):
         lines.append(f"- Other names: {', '.join(entry['aliases'])}")
     if entry.get("methods"):
@@ -184,6 +207,9 @@ def main(argv: list[str] | None = None) -> None:
     add.add_argument("--search", help="Comma-separated search terms")
     add.add_argument("--methods", help="Comma-separated measurement methods")
     add.add_argument("--description", default="")
+    add.add_argument("--contexts", help=f"Comma-separated Pint contexts ({', '.join(CONTEXTS)})")
+    add.add_argument("--reference", default="", help=f"Reference electrode for potentials ({', '.join(REFERENCES)})")
+    add.add_argument("--species", default="", help="Product formula for molar mass, e.g. H2")
     add.add_argument("--overwrite", action="store_true", help="Replace an existing entry")
     args = parser.parse_args(argv)
 
@@ -199,7 +225,8 @@ def main(argv: list[str] | None = None) -> None:
         print(describe_for_extractor(*match))
     else:
         entry = {"aliases": _split(args.aliases), "unit": args.unit.strip(),
-                 "standard_unit": args.standard_unit.strip(),
+                 "standard_unit": args.standard_unit.strip(), "contexts": _split(args.contexts),
+                 "reference": args.reference.strip(), "species": args.species.strip(),
                  "plausible_range": list(args.range) if args.range else None,
                  "search_terms": _split(args.search), "methods": _split(args.methods),
                  "description": args.description.strip()}
