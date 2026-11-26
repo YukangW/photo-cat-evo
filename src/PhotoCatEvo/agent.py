@@ -18,21 +18,24 @@ Output:
     results/paper_001_extraction.json        results for each data item and sample
     results/paper_001_extraction.csv         the same as a table: item, value, range, error, unit,
                                              standard_value/_range/_error/_unit, sample, ...
-    results/paper_001_extraction_trace.json  the plan + every tool call for every item (debugging/slides)
+    results/paper_001_extraction_trace.json  the plan, tool calls and extraction metrics
 """
 import argparse
 import csv
 import json
 import os
 import re
+from time import perf_counter
 
 from .config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
                      USE_PROMPT_CACHE)
-from .llm import chat
+from .llm import TokenUsage, chat
 from .parameters import (describe_for_extractor, describe_for_planner, find_parameter, load_parameters,
                          standard_unit_for)
 from .tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
 from .units import standardise
+
+_EXTRACTED_STATUSES = {"verified", "range_only"}
 
 PLANNER_PROMPT = """You turn a user's data-extraction request into a list of separate data items.
 
@@ -119,7 +122,7 @@ def _describe(target: dict) -> str:
 
 
 def _summary(target: dict, result: dict) -> str:
-    if result.get("status") not in ("verified", "range_only"):
+    if result.get("status") not in _EXTRACTED_STATUSES:
         return f"- {target['name']}: {result.get('status')}"
     shown = result["value"] if result.get("value") is not None else f"range {result['range']}"
     if result.get("error"):
@@ -155,7 +158,7 @@ def _rows(target: dict, result: dict, paper: str, doi: str) -> list[dict]:
             "requested_unit": target.get("unit", ""), "details": target.get("details", ""),
             "steps": result.get("steps"), "warnings": "; ".join(result.get("warnings") or [])}
     main = {k: v for k, v in result.items() if k not in ("other_samples", "warnings", "steps")}
-    rows = [{**base, **main, "is_main": "yes" if result.get("status") in ("verified", "range_only") else ""}]
+    rows = [{**base, **main, "is_main": "yes" if result.get("status") in _EXTRACTED_STATUSES else ""}]
     for o in result.get("other_samples") or []:
         rows.append({**base, **o, "is_main": "no"})
     return rows
@@ -185,6 +188,18 @@ def _print_table(results: list[dict]) -> None:
     widths = [min(30, max(len(row[i]) for row in rows)) for i in range(len(rows[0]))]
     for row in rows:
         print("  ".join(cell[:30].ljust(w) for cell, w in zip(row, widths)))
+
+
+def _format_token_usage(usage: dict) -> str:
+    reported = usage["requests_with_usage"]
+    missing = usage["requests_without_usage"]
+    if not reported and missing:
+        return f"token usage unavailable (0/{missing} requests reported usage)"
+    counts = (f"{usage['prompt_tokens']:,} input, {usage['completion_tokens']:,} output, "
+              f"{usage['total_tokens']:,} total tokens")
+    if missing:
+        counts += f" (partial, {reported}/{reported + missing} requests reported usage)"
+    return counts
 
 
 def _run_tool_calls(msg, tools, messages: list, trace: list, step: int):
@@ -233,7 +248,8 @@ def plan_targets(prompt: str, params: dict | None = None) -> tuple[list, list]:
 
 # ============================================================ 2. extract one item
 def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[str],
-                params: dict | None = None, known_samples: list[str] | None = None) -> tuple[dict, list]:
+                params: dict | None = None, known_samples: list[str] | None = None, *,
+                token_usage: TokenUsage | None = None) -> tuple[dict, list]:
     """Run the tool-using agent loop for ONE data item. Returns (result, trace)."""
     params = load_parameters() if params is None else params
     tools = PaperTools(paper_text, target, params)
@@ -262,7 +278,7 @@ def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[st
 
     for step in range(1, MAX_STEPS + 1):
         try:
-            msg = chat(messages, tools=TOOLS)
+            msg = chat(messages, tools=TOOLS, token_usage=token_usage)
         except RuntimeError as e:          # LLM down after retries: mark this item failed, keep the others
             print(f"  [step {step}] LLM failed: {e}. Skipping this item.")
             trace.append({"step": step, "error": str(e)})
@@ -329,14 +345,31 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
                     f"range check (add it with: uv run python -m PhotoCatEvo.parameters add ...)")
 
     results, item_traces, done_so_far, known_samples = [], [], [], []
+    paper_usage = TokenUsage()
+    extraction_started = perf_counter()
     for i, target in enumerate(targets, 1):
         print(f"\n[{i}/{len(targets)}] {_describe(target)}")
-        result, trace = extract_one(paper_text, target, prompt, done_so_far, params, known_samples)
+        item_usage = TokenUsage()
+        item_started = perf_counter()
+        result, trace = extract_one(paper_text, target, prompt, done_so_far, params, known_samples,
+                                    token_usage=item_usage)
+        item_metrics = {"elapsed_seconds": perf_counter() - item_started, "status": result["status"],
+                        "token_usage": item_usage.as_dict()}
+        paper_usage.add(item_usage)
         print(f"  => {_summary(target, result)[2:]}")
         results += _rows(target, result, paper_name, doi)
-        item_traces.append({"item": target["name"], "trace": trace})
+        item_traces.append({"item": target["name"], "trace": trace, "metrics": item_metrics})
         done_so_far.append(_summary(target, result))
         known_samples += [n for n in _sample_names(result) if n not in known_samples]
+    extraction_elapsed = perf_counter() - extraction_started
+
+    extracted_samples = {r["sample_name"] for r in results
+                         if r.get("sample_name") and r["status"] in _EXTRACTED_STATUSES}
+    metrics = {"elapsed_seconds": extraction_elapsed,
+               "parameters_attempted": len(item_traces),
+               "parameters_extracted": sum(item["metrics"]["status"] in _EXTRACTED_STATUSES
+                                           for item in item_traces),
+               "sample_count": len(extracted_samples), "token_usage": paper_usage.as_dict()}
 
     print("\nStandardising units...")
     results = standardise_results(results, params)
@@ -349,8 +382,17 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
         json.dump(final, f, indent=2, ensure_ascii=False)
     _write_csv(os.path.join(RESULTS_DIR, f"{paper_name}_extraction.csv"), results)
     with open(os.path.join(RESULTS_DIR, f"{paper_name}_extraction_trace.json"), "w", encoding="utf-8") as f:
-        json.dump({"plan": {"targets": targets, "trace": plan_trace}, "items": item_traces},
+        json.dump({"plan": {"targets": targets, "trace": plan_trace}, "items": item_traces, "metrics": metrics},
                   f, indent=2, ensure_ascii=False)
+
+    print("\nEXTRACTION METRICS")
+    print(f"  Whole paper: {metrics['parameters_attempted']} parameters attempted, "
+          f"{metrics['parameters_extracted']} extracted, {metrics['sample_count']} samples, "
+          f"{metrics['elapsed_seconds']:.2f} s, {_format_token_usage(metrics['token_usage'])}")
+    for target, item in zip(targets, item_traces):
+        item_metrics = item["metrics"]
+        print(f"  {_describe(target)} [{item_metrics['status']}]: {item_metrics['elapsed_seconds']:.2f} s, "
+              f"{_format_token_usage(item_metrics['token_usage'])}")
     return final
 
 

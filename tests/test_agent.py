@@ -5,9 +5,10 @@ Run:  python -m pytest test_agent.py -q
 import json
 from types import SimpleNamespace
 
+import httpx
 import pytest
 
-from PhotoCatEvo import agent
+from PhotoCatEvo import agent, llm
 from PhotoCatEvo.tools import PaperTools, PlanTools
 
 PAPER = ("The optimised sample CN-550 showed a band gap of 2.65 eV from the Tauc plot. "
@@ -37,7 +38,7 @@ def _fake_chat(replies):
     """Return a chat() that hands out the scripted replies in order and records what it was sent."""
     sent = []
 
-    def chat(messages, tools=None):
+    def chat(messages, tools=None, *, token_usage=None):
         sent.append([dict(m) for m in messages])
         return replies.pop(0)
 
@@ -82,6 +83,67 @@ def test_multi_item_prompt_runs_once_per_item_in_order(monkeypatch):
     item2_task = chat.sent[3][-1]["content"]
     assert "Extract this data item now: BET surface area" in item2_task
     assert "band gap: 2.65 eV for sample CN-550" in item2_task
+
+
+def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
+    targets = [{"name": name} for name in ("BET surface area", "band gap", "quantum yield", "lifetime")]
+    replies = iter([
+        (_msg(_Call("set_targets", {"targets": targets})), 9000, 900),
+        (_msg(_Call("search_text", {"keyword": "BET"})), 100, 10),
+        llm.APIConnectionError(request=httpx.Request("POST", "https://example.test")),
+        (_msg(_Call("save_result", {"value": 45.3, "unit": "m2 g-1", "sample_name": "CN-550",
+                                   "evidence": "Its BET surface area was 45.3 m2 g-1",
+                                   "other_samples": [{"sample_name": "bulk g-C3N4", "value": 10.2,
+                                                      "evidence": "bulk g-C3N4 (10.2 m2 g-1)"}]})), 200, 20),
+        (_msg(_Call("save_result", {"value": 2.65, "unit": "eV", "sample_name": "CN-550",
+                                   "evidence": "CN-550 showed a band gap of 2.65 eV"})), 300, 30),
+        (_msg(_Call("save_result", {"value": None, "sample_name": "unverified name"})), None, None),
+        (None, 400, 40),  # usage still counts when the response has no choices
+    ])
+
+    def create(**kwargs):
+        reply = next(replies)
+        if isinstance(reply, Exception):
+            raise reply
+        message, prompt, completion = reply
+        usage = (None if prompt is None else
+                 SimpleNamespace(prompt_tokens=prompt, completion_tokens=completion, total_tokens=prompt + completion))
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)] if message else [], usage=usage)
+
+    sleeps = []
+    clock = iter([10, 11, 16, 17, 20, 21, 22, 23, 25, 26])
+    monkeypatch.setattr(llm.client.chat.completions, "create", create)
+    monkeypatch.setattr(llm, "time", SimpleNamespace(sleep=sleeps.append))
+    monkeypatch.setattr(agent, "perf_counter", lambda: next(clock))
+    paper_path = tmp_path / "paper.txt"
+    paper_path.write_text(PAPER, encoding="utf-8")
+
+    agent.main([str(paper_path), "Extract BET surface area, band gap, quantum yield and lifetime"])
+
+    assert sleeps == [5]
+    trace = json.loads((tmp_path / "paper_extraction_trace.json").read_text(encoding="utf-8"))
+    assert trace["metrics"] == {
+        "elapsed_seconds": 16, "parameters_attempted": 4, "parameters_extracted": 2, "sample_count": 2,
+        "token_usage": {"prompt_tokens": 1000, "completion_tokens": 100, "total_tokens": 1100,
+                        "requests_with_usage": 4, "requests_without_usage": 2},
+    }
+    assert [item["item"] for item in trace["items"]] == [target["name"] for target in targets]
+    assert [(item["metrics"]["status"], item["metrics"]["elapsed_seconds"], item["metrics"]["token_usage"])
+            for item in trace["items"]] == [
+        ("verified", 5, {"prompt_tokens": 300, "completion_tokens": 30, "total_tokens": 330,
+                         "requests_with_usage": 2, "requests_without_usage": 1}),
+        ("verified", 3, {"prompt_tokens": 300, "completion_tokens": 30, "total_tokens": 330,
+                         "requests_with_usage": 1, "requests_without_usage": 0}),
+        ("not_reported", 1, {"prompt_tokens": None, "completion_tokens": None, "total_tokens": None,
+                             "requests_with_usage": 0, "requests_without_usage": 1}),
+        ("failed", 2, {"prompt_tokens": 400, "completion_tokens": 40, "total_tokens": 440,
+                       "requests_with_usage": 1, "requests_without_usage": 0}),
+    ]
+    output = capsys.readouterr().out
+    assert "4 parameters attempted, 2 extracted, 2 samples, 16.00 s" in output
+    assert "1,000 input, 100 output, 1,100 total tokens (partial, 4/6" in output
+    assert "BET surface area [verified]: 5.00 s, 300 input, 30 output, 330 total tokens" in output
+    assert "quantum yield [not_reported]: 1.00 s, token usage unavailable" in output
 
 
 def test_rejected_result_is_retried_before_moving_on(monkeypatch):

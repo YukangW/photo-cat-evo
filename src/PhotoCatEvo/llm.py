@@ -1,7 +1,9 @@
 """The only file that talks to the LLM (local vLLM or OpenRouter: same OpenAI-compatible API)."""
 import time
+from dataclasses import asdict, dataclass
 
 from openai import APIConnectionError, APIStatusError, OpenAI
+from openai.types import CompletionUsage
 
 from .config import API_KEY, BASE_URL, MODEL, TEMPERATURE
 
@@ -18,13 +20,49 @@ _HINTS = {
 }
 
 
-def chat(messages: list, tools: list | None = None, retries: int = 4):
+@dataclass
+class TokenUsage:
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    requests_with_usage: int = 0
+    requests_without_usage: int = 0
+
+    def record(self, usage: CompletionUsage | None) -> None:
+        prompt = getattr(usage, "prompt_tokens", None)
+        completion = getattr(usage, "completion_tokens", None)
+        total = getattr(usage, "total_tokens", None)
+        if not all(isinstance(count, int) and count >= 0 for count in (prompt, completion, total)):
+            self.requests_without_usage += 1
+            return
+        self.prompt_tokens += prompt
+        self.completion_tokens += completion
+        self.total_tokens += total
+        self.requests_with_usage += 1
+
+    def add(self, other: "TokenUsage") -> None:
+        self.prompt_tokens += other.prompt_tokens
+        self.completion_tokens += other.completion_tokens
+        self.total_tokens += other.total_tokens
+        self.requests_with_usage += other.requests_with_usage
+        self.requests_without_usage += other.requests_without_usage
+
+    def as_dict(self) -> dict[str, int | None]:
+        counts = asdict(self)
+        if self.requests_without_usage and not self.requests_with_usage:
+            counts.update(prompt_tokens=None, completion_tokens=None, total_tokens=None)
+        return counts
+
+
+def chat(messages: list, tools: list | None = None, retries: int = 4, *,
+         token_usage: TokenUsage | None = None):
     """Send the conversation, return the assistant message. Retries on rate limits / server errors."""
     kwargs = {"model": MODEL, "messages": messages, "tools": tools}
     if TEMPERATURE is not None:
         kwargs["temperature"] = TEMPERATURE
 
     for attempt in range(retries):
+        resp = None
         try:
             resp = client.chat.completions.create(**kwargs)
             if getattr(resp, "error", None):          # OpenRouter can put an error inside a 200 reply
@@ -39,6 +77,9 @@ def chat(messages: list, tools: list | None = None, retries: int = 4):
             err = f"HTTP {e.status_code}: {str(e.message)[:300]}"
         except APIConnectionError as e:
             err = e.__class__.__name__
+        finally:
+            if token_usage is not None:
+                token_usage.record(getattr(resp, "usage", None))
         wait = 5 * 2 ** attempt          # 5, 10, 20, 40 s
         print(f"  [llm] {err}. Retrying in {wait}s...")
         time.sleep(wait)

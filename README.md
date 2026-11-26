@@ -131,8 +131,23 @@ uv run --env-file .env PhotoCatEvo examples/text/paper_017.txt "Find the band ga
 Results:
 - `results/paper_001_extraction.json`: results for each data item and sample, with values, units, evidence, and status
 - `results/paper_001_extraction.csv`: the same results in tabular form
-- `results/paper_001_extraction_trace.json`: the plan and every tool call for every item, useful for debugging and for slides
+- `results/paper_001_extraction_trace.json`: the plan, tool calls, and extraction metrics
 - `text/paper_001.txt`: the converted paper text
+
+### Extraction metrics
+
+The terminal and trace JSON report elapsed seconds and input, output, and total tokens for the whole
+paper and for each requested parameter. One parameter's metrics cover all its samples and extraction
+steps, including retry delays. The paper's elapsed time spans the extraction loop, and its token usage
+is the sum of the parameter usages. Loading the input, planning, standardising units, and writing
+results are outside this scope.
+
+The paper summary includes the number of parameters attempted, the number with a verified value or
+range, and the number of distinct sample names with valid results. The top-level `metrics` object
+contains the paper summary. Each `items` entry has its own `metrics` object, including the extraction
+status. Token counts are subtotals when some requests lack usage. If no request reports usage, the
+counts are `null` in JSON and marked unavailable in the terminal. Both levels report usage coverage
+for partial or unavailable totals.
 
 ### Output columns
 

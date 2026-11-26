@@ -117,7 +117,7 @@ def test_llm_failure_marks_item_failed_and_keeps_going(monkeypatch, tmp_path):
         _msg(_Call("save_result", {"value": 22.8, "unit": "m2/g", "sample_name": "3NBCN", "evidence": q})),
     ]
 
-    def chat(messages, tools=None):
+    def chat(messages, tools=None, *, token_usage=None):
         r = replies.pop(0)
         if isinstance(r, Exception):
             raise r
