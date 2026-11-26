@@ -3,8 +3,8 @@ Step 1: PDF (+ optional Supporting Information) -> one plain-text file.
 Tables are detected and written as Markdown tables (| col | col |) where they appear in the paper.
 
 Usage:
-    python pdf_to_text.py papers/paper_001.pdf
-    python pdf_to_text.py papers/paper_001.pdf papers/paper_001_SI.pdf
+    uv run python -m PhotoCatEvo.pdf_to_text papers/paper_001.pdf
+    uv run python -m PhotoCatEvo.pdf_to_text papers/paper_001.pdf papers/paper_001_SI.pdf
 Output:
     text/paper_001.txt
 """
@@ -14,7 +14,7 @@ import sys
 
 import pymupdf  # pip install pymupdf
 
-from config import TEXT_DIR
+from .config import TEXT_DIR
 
 # a real caption: "Table 1 Physical...", "Table 2. Rates", "Table S1: ..." (not "Table S3 and Figures")
 TABLE_CAPTION = re.compile(r"^[ \t]*Table[ \t]+S?\d+[ \t]*[.:|]?[ \t]+[A-Z(]", re.MULTILINE)
@@ -136,7 +136,7 @@ def convert(main_pdf: str, si_pdf: str | None = None) -> tuple[str, int]:
     text = clean(remove_references(text))
     if si_pdf:
         si, n_si = pdf_to_text(si_pdf)
-        text += "SUPPORTING INFORMATION" + clean(si)
+        text += "\n\n===== SUPPORTING INFORMATION =====\n\n" + clean(si)
         n += n_si
     return text, n
 

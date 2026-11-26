@@ -6,12 +6,11 @@ import json
 
 import pytest
 
-import agent
-import parameters
-from parameters import add_parameter, find_parameter, load_parameters, units_match
+from PhotoCatEvo import agent, parameters
+from PhotoCatEvo.parameters import add_parameter, find_parameter, load_parameters, units_match
+from PhotoCatEvo.tools import PaperTools
 from test_agent import _Call, _fake_chat, _msg  # noqa: F401  (also brings in the results-dir fixture)
 from test_agent import _tmp_results  # noqa: F401
-from tools import PaperTools
 
 PARAMS = {
     "band gap": {"aliases": ["bandgap", "Eg"], "unit": "eV", "plausible_range": [1.0, 4.5],

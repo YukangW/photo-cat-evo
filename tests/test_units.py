@@ -6,11 +6,11 @@ import csv
 
 import pytest
 
-import agent
-from parameters import add_parameter, load_parameters, standard_unit_for
+from PhotoCatEvo import agent
+from PhotoCatEvo.parameters import add_parameter, load_parameters, standard_unit_for
+from PhotoCatEvo.tools import PaperTools
+from PhotoCatEvo.units import UnitError, convert, convert_error, convert_text, parse_unit, si_unit, standardise
 from test_agent import _Call, _fake_chat, _msg, _tmp_results  # noqa: F401  (fixture: results go to tmp)
-from tools import PaperTools
-from units import UnitError, convert, convert_error, convert_text, parse_unit, si_unit, standardise
 
 
 # ------------------------------------------------------------ reading units as papers write them

@@ -3,7 +3,7 @@ import time
 
 from openai import APIConnectionError, APIStatusError, OpenAI
 
-from config import API_KEY, BASE_URL, MODEL, TEMPERATURE
+from .config import API_KEY, BASE_URL, MODEL, TEMPERATURE
 
 client = OpenAI(base_url=BASE_URL, api_key=API_KEY, timeout=300, max_retries=0)
 

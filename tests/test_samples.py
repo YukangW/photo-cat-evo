@@ -4,9 +4,9 @@ Run:  python -m pytest test_samples.py -q
 """
 import csv
 
-import agent
+from PhotoCatEvo import agent
+from PhotoCatEvo.tools import PaperTools
 from test_agent import _Call, _fake_chat, _msg   # same scripted fake LLM
-from tools import PaperTools
 
 PAPER = ("https://doi.org/10.1016/j.ijhydene.2024.01.306\n"
          "Introduction. Bulk g-C3N4 has a band gap of about 2.7 eV [12], and Wang et al. reported 2.65 eV. "

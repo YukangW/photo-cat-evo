@@ -14,8 +14,8 @@ Extraction (once per data item):
 import re
 import unicodedata
 
-from parameters import find_parameter, load_parameters
-from units import UnitError, convert
+from .parameters import find_parameter, load_parameters
+from .units import UnitError, convert
 
 
 def _normalize(s: str) -> str:

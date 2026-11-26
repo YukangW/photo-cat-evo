@@ -1,6 +1,15 @@
 # Local Python environment
 .venv/
 
+# Generated Python and macOS files
+__pycache__/
+*.pyc
+.DS_Store
+
+# Outputs from local extraction runs
+/results/
+/text/
+
 # API KEY
 .env
 

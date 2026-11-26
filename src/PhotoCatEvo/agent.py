@@ -10,12 +10,12 @@ How it works
               The values as written in the paper are kept; the converted ones go in extra columns.
 
 Usage:
-    python agent.py papers/paper_001.pdf "Find the band gap and the BET surface area of the best sample"
-    python agent.py papers/paper_001.pdf "..." --si papers/paper_001_SI.pdf
-    python agent.py text/paper_001.txt "..."          # already-converted text also works
-    python agent.py papers/paper_001.pdf              # no prompt -> DEFAULT_PROMPT in config.py (bandgap)
+    uv run PhotoCatEvo papers/paper_001.pdf "Find the band gap and the BET surface area of the best sample"
+    uv run PhotoCatEvo papers/paper_001.pdf "..." --si papers/paper_001_SI.pdf
+    uv run PhotoCatEvo text/paper_001.txt "..."          # already-converted text also works
+    uv run PhotoCatEvo papers/paper_001.pdf              # no prompt -> DEFAULT_PROMPT in config.py (bandgap)
 Output:
-    results/paper_001_extraction.json        one result per data item
+    results/paper_001_extraction.json        results for each data item and sample
     results/paper_001_extraction.csv         the same as a table: item, value, range, error, unit,
                                              standard_value/_range/_error/_unit, sample, ...
     results/paper_001_extraction_trace.json  the plan + every tool call for every item (debugging/slides)
@@ -26,13 +26,13 @@ import json
 import os
 import re
 
-from config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
-                    USE_PROMPT_CACHE)
-from llm import chat
-from parameters import (describe_for_extractor, describe_for_planner, find_parameter, load_parameters,
-                        standard_unit_for)
-from tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
-from units import standardise
+from .config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
+                     USE_PROMPT_CACHE)
+from .llm import chat
+from .parameters import (describe_for_extractor, describe_for_planner, find_parameter, load_parameters,
+                         standard_unit_for)
+from .tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
+from .units import standardise
 
 PLANNER_PROMPT = """You turn a user's data-extraction request into a list of separate data items.
 
@@ -326,7 +326,7 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
             print(f"    '{t['name']}' -> dictionary entry '{t['parameter']}'")
         else:
             print(f"    '{t['name']}' is not in the dictionary: extracting it anyway, without notes or a "
-                  f"range check (add it with: python parameters.py add ...)")
+                    f"range check (add it with: uv run python -m PhotoCatEvo.parameters add ...)")
 
     results, item_traces, done_so_far, known_samples = [], [], [], []
     for i, target in enumerate(targets, 1):
@@ -358,7 +358,7 @@ def load_paper(path: str, si_path: str | None = None) -> tuple[str, str]:
     """Return (text, name). PDFs are converted with pdf_to_text.py and the text saved in text/."""
     name = os.path.splitext(os.path.basename(path))[0]
     if path.lower().endswith(".pdf"):
-        from pdf_to_text import convert          # needs pymupdf, only imported for PDFs
+        from .pdf_to_text import convert          # needs pymupdf, only imported for PDFs
         text, n_tables = convert(path, si_path)
         print(f"Converted PDF: {n_tables} tables found")
         os.makedirs(TEXT_DIR, exist_ok=True)
@@ -370,14 +370,14 @@ def load_paper(path: str, si_path: str | None = None) -> tuple[str, str]:
     return text, name
 
 
-if __name__ == "__main__":
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Extract the data asked for in a prompt from one paper.",
                                      epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("paper", help="Paper PDF (or a .txt made by pdf_to_text.py)")
     parser.add_argument("prompt", nargs="?", default=DEFAULT_PROMPT, help="What data to extract")
     parser.add_argument("--si", help="Supporting Information PDF (optional)")
     parser.add_argument("--doi", help="The paper's DOI, if it is not found in the text automatically")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     text, name = load_paper(args.paper, args.si)
     print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
@@ -385,3 +385,7 @@ if __name__ == "__main__":
     print("\nFINAL RESULTS:")
     _print_table(final["results"])
     print(f"\nFull results (with evidence quotes): {RESULTS_DIR}/{name}_extraction.json and .csv")
+
+
+if __name__ == "__main__":
+    main()

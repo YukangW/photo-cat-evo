@@ -14,9 +14,9 @@ Each entry is keyed by its name and can have:
     description      notes for the agent: what it is, how papers write it, what to watch out for
 
 Add an entry by editing parameters.json, or from the command line:
-    python parameters.py list
-    python parameters.py show "band gap"
-    python parameters.py add "zeta potential" --unit mV --range -100 100 \\
+    uv run python -m PhotoCatEvo.parameters list
+    uv run python -m PhotoCatEvo.parameters show "band gap"
+    uv run python -m PhotoCatEvo.parameters add "zeta potential" --unit mV --range -100 100 \\
         --aliases "surface charge" --search "zeta potential,mV" \\
         --methods "Electrophoretic light scattering" --description "Surface charge of particles in suspension."
 """
@@ -24,8 +24,8 @@ import argparse
 import json
 import re
 
-from config import PARAMETERS_FILE
-from units import UnitError, parse_unit
+from .config import PARAMETERS_FILE
+from .units import UnitError, parse_unit
 
 FIELDS = ("aliases", "unit", "standard_unit", "plausible_range", "search_terms", "methods", "description",
           "allowed_values", "default_if_missing")
@@ -194,7 +194,8 @@ def main(argv: list[str] | None = None) -> None:
     elif args.cmd == "show":
         match = find_parameter(args.name, load_parameters(args.file))
         if not match:
-            raise SystemExit(f"'{args.name}' is not in the dictionary. Add it with: python parameters.py add ...")
+            raise SystemExit(f"'{args.name}' is not in the dictionary. "
+                             "Add it with: uv run python -m PhotoCatEvo.parameters add ...")
         print(describe_for_extractor(*match))
     else:
         entry = {"aliases": _split(args.aliases), "unit": args.unit.strip(),

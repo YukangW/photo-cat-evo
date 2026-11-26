@@ -27,7 +27,7 @@ DEFAULT_PROMPT = "Find the bandgap of the main TiO2-based photocatalyst."
 # ---- Parameter dictionary ---------------------------------------------------------
 # The experimental quantities the agent knows about (band gap, BET surface area, ...): their aliases,
 # usual unit, plausible range, search terms and notes. Add your own in parameters.json, or with
-#   python parameters.py add "name" --unit ... --range MIN MAX ...
+#   uv run python -m PhotoCatEvo.parameters add "name" --unit ... --range MIN MAX ...
 # Found next to this file, so it works whichever folder you run the agent from.
 PARAMETERS_FILE = os.getenv("PARAMETERS_FILE",
                             os.path.join(os.path.dirname(os.path.abspath(__file__)), "parameters.json"))

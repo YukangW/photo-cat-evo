@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
-import agent
-from tools import PaperTools, PlanTools
+from PhotoCatEvo import agent
+from PhotoCatEvo.tools import PaperTools, PlanTools
 
 PAPER = ("The optimised sample CN-550 showed a band gap of 2.65 eV from the Tauc plot. "
          "Its BET surface area was 45.3 m2 g-1, higher than bulk g-C3N4 (10.2 m2 g-1). "
