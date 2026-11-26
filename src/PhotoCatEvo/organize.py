@@ -3,7 +3,8 @@ Combine the extraction results of many papers into ONE table: one row per sample
 
 Input:  a folder with results/<paper>_extraction.csv files (made by `uv run PhotoCatEvo ...`)
 Output: one CSV with
-    paper | doi | sample_name | is_main | <parameter> | <parameter>_unit | <next parameter> | ...
+    paper | doi | sample_name | <parameter> | <parameter>_unit | <next parameter> | ...
+A parameter that never has a unit (e.g. C:N ratio, or text such as the atmosphere) gets no _unit column.
 
 Values (standard units are used when the conversion worked, otherwise the paper's own value and unit):
     specific value      -> the value                       3.05        -> 3.05
@@ -26,7 +27,7 @@ import unicodedata
 
 from .units import _NUMBER
 
-ID_COLUMNS = ["paper", "doi", "sample_name", "is_main"]
+ID_COLUMNS = ["paper", "doi", "sample_name"]
 KEEP = ("verified", "range_only")
 
 
@@ -99,9 +100,9 @@ def organize(folder: str, out_csv: str | None = None, with_source: bool = False)
                     parameters.append(name)
                 row = samples.setdefault((paper, _norm_name(r["sample_name"])),
                                          {"paper": paper, "doi": r.get("doi", ""),
-                                          "sample_name": r["sample_name"].strip(), "is_main": ""})
+                                          "sample_name": r["sample_name"].strip(), "_main": False})
                 if r.get("is_main") == "yes":
-                    row["is_main"] = "yes"
+                    row["_main"] = True          # only used to list the main sample first
                 if name in row and row[name] != value:                  # same sample + parameter twice
                     conflicts.append(f"{paper} / {row['sample_name']} / {name}: kept {row[name]}, "
                                      f"ignored {value}")
@@ -112,14 +113,13 @@ def organize(folder: str, out_csv: str | None = None, with_source: bool = False)
 
     columns = list(ID_COLUMNS)
     for p in parameters:
-        columns += [p, f"{p}_unit"] + ([f"{p}_source"] if with_source else [])
-    rows = sorted(samples.values(), key=lambda r: (r["paper"], r["is_main"] != "yes", r["sample_name"]))
-    for r in rows:
-        r["is_main"] = r["is_main"] or "no"
+        has_unit = any(r.get(f"{p}_unit") for r in samples.values())   # C:N ratio, text values: no unit
+        columns += [p] + ([f"{p}_unit"] if has_unit else []) + ([f"{p}_source"] if with_source else [])
+    rows = sorted(samples.values(), key=lambda r: (r["paper"], not r["_main"], r["sample_name"]))
 
     os.makedirs(os.path.dirname(out_csv) or ".", exist_ok=True)
     with open(out_csv, "w", newline="", encoding="utf-8-sig") as f:    # utf-8-sig: Excel shows µ, °
-        w = csv.DictWriter(f, fieldnames=columns, restval="")
+        w = csv.DictWriter(f, fieldnames=columns, restval="", extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
 
