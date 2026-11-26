@@ -125,6 +125,9 @@ def clean(text: str) -> str:
     text = re.sub(r"-\n(?=[a-z])", "", text)        # join words split by hyphenation
     text = re.sub(r"[ \t]+", " ", text)             # collapse spaces
     text = re.sub(r"\n{3,}", "\n\n", text)          # collapse empty lines
+    text = re.sub(r"\u00ad\s*", "", text)                       # soft hyphen at a line break: rejoin the word
+    for lig, rep in {"\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl", "\ufb03": "ffi", "\ufb04": "ffl"}.items():
+        text = text.replace(lig, rep)                           # ligatures -> normal letters
     return text.strip()
 
 
@@ -133,7 +136,7 @@ def convert(main_pdf: str, si_pdf: str | None = None) -> tuple[str, int]:
     text = clean(remove_references(text))
     if si_pdf:
         si, n_si = pdf_to_text(si_pdf)
-        text += "SUPPORTING INFORMATION" + clean(si)
+        text += "\n\n===== SUPPORTING INFORMATION =====\n\n" + clean(si)
         n += n_si
     return text, n
 

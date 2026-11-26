@@ -1,0 +1,628 @@
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+Available online 23 March 2023
+1369-8001/© 2023 Elsevier Ltd. All rights reserved.
+
+Reductively-induced carbon vacancies facilitate visible light-driven 
+hydrogen evolution enhancement of g-C3N4 
+
+Zhengdong Xu a, Jiahua Zhang b, Junbo Zhong a,*, Jiao Wu a, Minjiao Li a,** 
+
+a College of Chemical Engineering, Sichuan University of Science and Engineering, Zigong, 643000, PR China 
+b Academy for Advanced Interdisciplinary Studies, Peking University, Beijing, 100871, PR China 
+
+| A R T I C L E I N F O | A B S T R A C T |
+|---|---|
+| Keywords: | Graphite nitrogen carbide (g-C3N4, GCN) has attracted extensive attention. Herein, the g-C3N4 precursor was |
+| G-C3N4 | obtained through a conventional pyrolysis condensation path employing melamine as raw material. The g-C3N4 |
+| NaBH4 Construction of defects Photocatalytic performance | with abundant C vacancies was prepared with sodium borohydride (NaBH4) as reductant in different concentrations. Under visible light irradiation, the 3NBCN catalyst treated with 3 mol L−1 NaBH4 solution reveals outstanding photocatalytic hydrogen production activity, reaching 1764.9 μmol g−1 h−1, which is 7.56 folds higher than that of the reference GCN (206.3 μmol g−1 h−1). The 3NBCN also exhibits remarkable stability in the |
+| | photocatalytic cyclic hydrogen production experiment. As a control experiment, Cr(VI) reduction further attests |
+| | that g-C3N4 reduced by NaBH4 has an increased photocatalytic performance. The reduction rate of Cr(VI) over 3NBCN is 3.38 folds higher than that over the reference GCN. Multiple characterization results and density functional theory (DFT) calculations prove that the boosted photocatalytic activity benefits from the successful |
+| | introduction of C defects, which promotes that photoexcited charges separate and transfer considerably faster and more efficiently. Considering all our results, a hypothesis for the mechanism of enhancement in photo|
+| | catalytic performance is presented. |
+
+1. Introduction 
+
+It is generally acknowledged that the use of environmentally 
+compatible and renewable energy conversion schemes is the optimal 
+choice for long-term sustainability [1–3]. Due to its innumerable advantages, such as convenient storage, transportation, and high energy 
+density, hydrogen energy has the highest acceptance among the many 
+energy resources to alleviate the energy crisis [4,5]. Nowadays, most 
+hydrogen production technologies are still dependent on fossil energy 
+consumption. Thus, the challenge of how to accelerate the transition to 
+hydrogen production is of extraordinary significance. Hydrogen (H2) 
+generation from photocatalytic water splitting using solar light is one of 
+the most desirable means since solar energy is inexhaustible and 
+non-polluting [6–10]. Hydrogen prepared by photocatalysis technology 
+has high purity and can be directly employed. In addition, great efforts 
+have been devoted to addressing the environmental crisis, photocatalytic technologies are also favored for the cleanup of environmental 
+contaminants, such as the degradation of organic dyes, organic fluorides, and antibiotic that are difficult to detoxify by microorganisms, and 
+
+the reduction of heavy metals [11–17]. Nevertheless, the core of photocatalytic technology is the photocatalyst, so it is indispensable to 
+design a highly efficient and stable photocatalyst to reduce the ecological damage. 
+
+To achieve this goal, considerable photocatalysts have been explored 
+by researchers, and their feasibility in practical applications has been 
+investigated and verified [18–24]. Among all the photocatalysts, g-C3N4 
+has attracted the most interest from researchers thanks to its exceptional 
+graphite-like two-dimensional layered structure [25,26]. According to 
+the recent reports, the C and N atoms in g-C3N4 are bonded by covalent 
+bonds, similar to the hexagonal honeycomb structure of the benzene 
+ring. The ring is connected with N atoms, and the layers are stacked via 
+hydrogen bonds to form a blocky structure, which endows g-C3N4 stable 
+physical and chemical properties [27]. Simultaneously, the multiple 
+advantages of g-C3N4, such as low cost, simple preparation process, 
+non-toxicity, and suitable bandgap, make g-C3N4 a promising material 
+in the development of photocatalytic technology utilizing solar energy 
+[28–31]. However, as a single photocatalyst, g-C3N4 demonstrates low 
+photocatalytic activity owing to a low specific surface area, and sluggish 
+
+* Corresponding author. 
+** Corresponding author. 
+E-mail addresses: junbozhong@suse.edu.com (J. Zhong), lmj0621@126.com (M. Li). 
+
+Contents lists available at ScienceDirect 
+
+Materials Science in Semiconductor Processing 
+
+journal homepage: www.elsevier.com/locate/mssp 
+
+https://doi.org/10.1016/j.mssp.2023.107459 
+Received 2 January 2023; Received in revised form 3 March 2023; Accepted 13 March 2023 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+2
+
+separation and transfer of photoinduced carriers [32–35]. Therefore, to 
+meet the practical application, multiple methods have been explored 
+and tried to further ameliorate the photocatalytic properties of g-C3N4, 
+among which the main approaches include atomic doping [36], deposition of precious metals [37], morphology regulation [38] and construction of defects [39]. Therein, the introduction of defects 
+demonstrates to be a reliable approach to enhance the activity of pure 
+g-C3N4 in many aspects [40,41]. Amongst those strategies, the studies on 
+g-C3N4 with defects have been a focal point in the photocatalytic field in 
+recent years. Defects can be introduced in the bulk or on the surface of 
+photocatalysts. Therein, surface vacancies, as one of the defects can 
+capture electrons, and promote the transfer of photogenerated electrons 
+on the interface [42]. Simultaneously, these sites after the escape of 
+surface atoms can also be used as reaction sites, which can greatly 
+enhance the absorption of the target species and broaden the light 
+response spectrum [43]. For example, Zhang’s research team prepared 
+ultra-thin carbon nitride with abundant carbon defects on the surface, 
+the materials can realize strong adsorption and activate dinitrogen 
+molecules. The carbon defects accelerate the photogenerated charge 
+separation between bulk and surface, thereby displaying increased 
+photocatalytic nitrogen fixation activity under visible-light irradiation 
+[44]. Furthermore, Wu and colleagues successfully designed nitrogen 
+-deficient carbon nitride by means of hydrothermal copolymerization, 
+which endows g-C3N4 with a wider range of visible-light response and a 
+larger exposed surface area for the photocatalytic reduction reaction, 
+enabling efficient separation of photogenerated carriers. H2 evolution 
+rate over the photocatalyst prepared can reach 92 μmol h−1 with the 
+optimal conditions [45]. Additionally, vacancies can also affect the 
+adsorption properties of target pollutants, thereby affecting the coordination structure and electronic state of target pollutants [46]. More 
+importantly, the location, structure, and concentration of vacancies are 
+vital factors that affect photocatalytic performance. For example, g-C3N4 
+photocatalysts with different levels of nitrogen vacancies exhibit 
+distinguished improvement in hydrogen evolution and pollutant 
+degradation as reported by Liang et al. [47]. 
+
+Many methods have been developed to introduce vacancies into g- 
+C3N4, such as baking in a reductive atmosphere [48], morphology 
+control [49], and construction of heterojunctions [50]. However, all 
+these approaches have inherent shortcomings, such as high economic 
+cost and complicated processes. Thus, the development of a simple 
+approach to constructing vacancies is an important challenge. 
+
+Inspired by the above reports, g-C3N4 was surface treated through 
+NaBH4 solution with different concentrations to introduce carbon vacancies to boost the visible-light-driven photocatalytic reduction performance. The crystal property, microscopic appearance, and surface 
+states of the treated photocatalysts were studied and analyzed by multiple characterization methods. The impact of carbon vacancies on the 
+optical properties of g-C3N4 was explored through spectroscopic measurement and theoretical calculations. The photocatalytic efficiency of 
+the sample was evaluated with visible light illumination inducing water 
+splitting for the H2 production and Cr(VI) reduction experiments. Using 
+3NBCN as the representative of the photocatalyst prepared, the stability 
+of g-C3N4 after NaBH4 treatment was explored through four photocatalytic hydrogen production cycle experiments. The results show that 
+carbon vacancies can significantly facilitate photoinduced e−/h+ pairs 
+to separate and migrate, expanding the overall light absorption and 
+utilization, and thus enhancing the photocatalytic performance. Finally, 
+the mechanism for the enhanced photocatalytic property was explored 
+based on all the observed results. In all, this work develops a practical 
+strategy to boost the photocatalytic performance of g-C3N4. 
+
+2. Experiment section 
+
+2.1. Preparation and treatment of g-C3N4 
+
+g-C3N4 was prepared successfully according to the synthesis route 
+
+presented in Scheme 1. Specifically, 10 g melamine was completely 
+ground up and transferred to a crucible with cover and placed into a 
+temperature-programmed the muffle furnace for heat treatment for 210 
+min to 550 ◦C for 4 h [51]. The calcined sample was ground again to 
+obtain a light-yellow g-C3N4 precursor material after the material cooled 
+down to 25 ◦C. Subsequently, the desired NaBH4 solution (10.0 mol L−1) 
+was diluted with NaOH solution (pH≈10.0) to a specific concentration. 
+2 g g-C3N4 precursor was added into 100 mL NaBH4 solution with a 
+different concentration (2.0 mol L−1, 3.0 mol L−1, 4.0 mol L−1 and 5.0 
+mol L−1), and the suspension was intensely agitated at 25 ◦C for a day. 
+The treated samples were fully cleaned with large amounts of 
+high-purity water and anhydrous ethanol to eliminate residual surface 
+impurities. Finally, the catalyst was dried and ground and was named 
+2NBCN, 3NBCN, 4NBCN, and 5NBCN in light of the concentration of 
+NaBH4 solution used, respectively. The reference g-C3N4 was also 
+treated as the above treatment method without the presence of NaBH4 
+and denoted as GCN. 
+
+2.2. Characterization of the photocatalysts 
+
+An SSA-4200 automatic analyzer was used to test the N2 adsorption- 
+desorption curves, specific surface area, and pore structure using BET 
+analysis. The test temperature was 77 K. The relative content of each 
+element in the sample was analyzed by energy dispersive spectroscopy 
+(EDS). The morphology of the prepared photocatalysts was directly 
+observed through a VEGA3 SBU scanning electron microscope (SEM) 
+and transmission electron microscope (TEM), the acceleration voltage of 
+the instrument was 5 kV and the current was 5 A. The crystal structure 
+and phase composition of solid powder were recorded via an X-ray 
+diffraction instrument (XRD). To investigate the changes in the geometric structure of the sample, Raman spectra of the prepared photocatalysts were scanned on a DXR Raman instrument. An XSAM 800 X-ray 
+photoelectron spectrometer (XPS) was employed to characterize the 
+surface properties of the catalyst and the micro-chemical environment of 
+elements. The test voltage was 12 kV, and the test current was 12 mA. 
+The relative content of unpaired electrons of the prepared photocatalysts was performed on a low-temperature electron spin resonance 
+(LT-ESR) spectrometer (model: Bruker ESR A 300). The optical properties of all samples were tested via UH4150 UV–visible diffuse reflection 
+(UV–Vis DRS) with pure BaSO4 as the reference sample, and the scanning range was 200 nm–800 nm. Surface photovoltage spectroscopy 
+(SPS) can directly and graphically demonstrate the photoinduced e−/h+
+
+pairs separation and migration behavior in semiconductor materials on 
+a homemade instrument. Finally, the photoelectric properties of all the 
+prepared catalysts in a liquid phase environment (Na2SO4 solution, pH 
+=
+7) were investigated on an electrochemical station CHI660 
+instrument. 
+
+2.3. Photocatalytic performance evaluation 
+
+Visible light-driven photocatalytic water splitting experiments were 
+
+Scheme 1. Preparation process for GCN and NBCN samples. 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+3
+
+performed in CEL-PEAM-D6 closed cycle reactor (Beijing China Education Au-Light Co., Ltd.). Specifically, the reaction system was formed by 
+placing 100 mg powder sample into 100 mL 15 vol% triethanolamine 
+(TEOA) and using 3 wt% chloroplatinic acid as a co-catalyst. The reaction suspension was ultrasonicated for 10 min to fully disperse the 
+photocatalyst powder. The reactor was closely connected to the sealing 
+device, and then the whole system was evacuated for 30 min to exhaust 
+the residual air. After turning on a light source with a 420 nm cut-off 
+filter, the amount of hydrogen produced was measured every 1 h by a 
+thermal conductivity detector (TCD) device equipped with gas chromatography (GC-7920-TA, high-pure N2 as carrier gas). 
+
+The photocatalytic performance of 3NBCN and GCN was further 
+investigated by the removal of the Cr(VI) with visible light. The specific 
+operation steps were presented as follows: 50 mg 3NBCN and GCN were 
+uniformly dispersed into two quartz reaction tubes containing 50 mL 
+potassium dichromate (K2Cr2O7) solution (10 mg/L, pH = 2.0 ± 0.5), 
+respectively. Before turning on the light, the suspension system was 
+vigorously stirred in the reaction instrument with the door closed for 
+half an hour to reach an equilibrium of the target contaminant molecules 
+adsorbed on the photocatalyst surface. After visible light irradiation, 5 
+mL reaction residual liquid was taken out at a certain interval and 
+immediately centrifuged at high speed, and then the catalyst was filtered 
+and removed. 100 μL H3PO4 (50 vol%), 100 μL H2SO4 (50 vol%), and 
+400 μL chromogenic agent (2 g/L diphenylcarbazide) were added into 
+the filtrate. The absorbance of the solution taken out at the interval time 
+was analyzed on a UV–Vis spectrophotometer at 540 nm to monitor the 
+relative concentration changes of Cr(VI). 
+
+2.4. Calculation method 
+
+Detailed calculation procedures and parameters are presented in the 
+Supporting Information. 
+
+3. Results and discussion 
+
+Specific surface area (SBET) and pore volume of the photocatalyst 
+directly determine the adsorption capacity of the target species and the 
+utilization rate of light, the surface characteristics of reference GCN and 
+3NBCN were analyzed by BET test. The SBET of GCN and 3NBCN were 
+straightway calculated by the BET analyzer to be 22.5 m2/g and 22.8 
+m2/g, separately, which suggests that surface treatment of g-C3N4 by 
+sodium borohydride solution cannot effectively change the SBET of g- 
+C3N4. The N2 adsorption-desorption curves and pore radius distribution 
+of GCN and 3NBCN samples were further analyzed. As illustrated in 
+
+Fig. 1A and B, the adsorption-desorption curves have obvious hysteresis 
+loops, which pertain to the type IV isotherm, implying that both samples 
+have mesoporous structures [52,53]. The particle size distribution (PSD) 
+curves of the two samples are mainly concentrated in the region of 2 
+nm–50 nm, demonstrating that mesopores exist in the photocatalysts. 
+However, the 3NBCN sample shows a slightly different pore adsorption 
+capacity compared with the GCN sample. The different pores can 
+effectively change photocatalytic performance by introducing surface 
+defects [54], which can be attested by EDS, XPS, and LT-ESR test results. 
+
+Micromorphology characteristics of GCN and 3NBCN samples were 
+observed by SEM. As present in Fig. 2A and B, the micromorphology of 
+GCN and 3NBCN (B) sample demonstrates a block-like structure formed 
+by a rough surface and irregular layered stacking. Furthermore, it was 
+observed that the uneven surfaces of both have fault lines, which provide additional sites for the catalyst to contact the reactant. Simultaneously, the micro-morphology of the sample was deeply observed by 
+TEM and shown in Fig. 2C and D, two samples were in disordered state. 
+Compared with GCN, 3NBCN has thinner nanolayer and tighter stack, 
+indicating that the microstructure of g-C3N4 has been altered after 
+NaBH4 treatment. 
+
+XRD analysis is a prerequisite to evaluate the crystal structure and 
+differences of the photocatalysts prepared [55]. To investigate the 
+crystal structural changes of g-C3N4 before and after NaBH4 treatment, 
+the prepared samples were analyzed by XRD. As revealed in Fig. 3A, 
+XRD patterns show two representative diffraction peaks at 2θ = 12.9
+
+◦
+
+and 27.4
+
+◦, belonging to the (100) and (002) crystal plane of g-C3N4, 
+which can be assigned to the orderly arrangement of thiazine basic units 
+in g-C3N4 structures and the interlayer closely connecting the triazine 
+ring structures [56]. Compared with the pure g-C3N4, the diffraction 
+peak corresponding to the (002) crystal planes of all the NaBH4 treated 
+g-C3N4 shifts to a higher angle, and 3NBCN displays the obvious shift, 
+implying that the interlayer spacing becomes smaller, which is beneficial to shorten the migration time of photogenerated electrons from the 
+bulk to the surface, thereby more electrons can participate in the redox 
+reaction, effectively boosting the photocatalytic activity. 
+
+Raman spectra can show the stretching vibration of the bonds in the 
+prepared photocatalysts, and the corresponding Raman-shifts were 
+displayed in Fig. 3B. 1232 cm−1 and 706 cm−1 correspond to the characteristic peaks of the single bond and heterocyclic ring in the samples, 
+respectively [57,58]. Compared with GCN, the position of the characteristic peak of 3NBCN shows no significant shift, which implies that the 
+crystal structure of g-C3N4 cannot drastically alter through NaBH4 
+treatment. Moreover, the relative proportion of elements in GCN and 
+3NBCN was obtained by EDS test and were depicted in Fig. 3C and D. It 
+
+Fig. 1. N2 adsorption-desorption isotherms and pore size distribution of GCN (A) and 3NBCN (B). 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+4
+
+Fig. 2. SEM images of GCN (A) and 3NBCN (B), TEM images of GCN (C) and 3NBCN (D). 
+
+Fig. 3. XRD patterns of the photocatalysts (A); Raman spectra (B); EDS analysis of GCN (C) and 3NBCN (D). 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+5
+
+can be seen that the sample is principally composed of C and N elements, 
+indicating the high purity of the sample, and oxygen stems from 
+adsorbed oxygen from the air. Impressively, the molar ratio of C/N in the 
+two samples is 0.88 and 0.76, respectively, which directly confirms that 
+the C content in 3NBCN is significantly reduced compared with that in 
+GCN, strongly suggesting that carbon vacancies have been successfully 
+introduced into GCN after NaBH4 treatment. In general, C vacancies can 
+act as the reaction sites to increase the adsorption of more reactants, 
+which is also conducive to enhancing the time of retention and photoinduced e−/h+ separation and transfer, endowing the sample with 
+outstanding photocatalytic redox activity [59]. 
+
+In order to further explore the authentic existence of enriched C 
+vacancies after g-C3N4 treatment by NaBH4, XPS was used to survey the 
+elemental environment of the sample and exhibited in Fig. 4A. Three 
+elements were present in both samples. C and N are attributed to the 
+composition of the g-C3N4 ontology, whereas the presence of element O 
+originates from the adsorption of O2 and H2O on the sample surface. 
+Fig. 4B is the high-resolution C 1s spectrum of reference GCN and 
+3NBCN, which can be fitted into two peaks, and the binding energy is 
+287.9 eV and 284.7 eV, 287.8 eV, and 284.6 eV, respectively, allocating 
+to C-(N)2 and C–C species in the molecular structure [60]. By comparison, it can be found that the C-(N)2 area of 3NBCN (49.15%) is much 
+smaller than that of GCN (62.45%), which can substantially explain the 
+decrease of carbon content in 3NBCN. These results powerfully illustrate 
+the existence of C vacancies [61]. From Fig. 4C, the three core peak 
+positions of the N 1s spin orbits of the two samples were fitted to 404.2 
+eV, 400.2 eV, and 398.4 eV, respectively, which can be assigned to the 
+–NH2, N-(C)3, and C=N–C in the molecular composition of the sample, 
+respectively. Interestingly, the peak area of –NH2 in 3NBCN is slightly 
+
+higher than that in GCN, which can be assigned to the formation of C 
+vacancies, leading to the desaturation of the originally connected N 
+atom, thus binding available H atoms as compensation, and forming 
+more –NH2 [62]. In the two samples, the corresponding peak areas for 
+N-(C)3 and N-(C)2 also have significant changes. This prominent phenomenon provides strong support for the DFT calculations performed in 
+this work. Compared with GCN, the N 1s orbital of 3NBCN moves towards a lower binding energy because of the abundant carbon vacancies 
+induced by the intermolecular charge interaction. In order to more 
+accurately confirm the existence of carbon vacancies, the LT-ESR test 
+was performed. As exhibited in Fig. 4D, GCN and 3NBCN sample display 
+two conspicuous Lorentzian lines near g = 2.003, which highlights the 
+generation of vacancies. Combining EDS and XPS results, one can 
+conclude that the vacancies are C vacancies. Furthermore, 3NBCN has a 
+higher ESR signal than GCN, which illustrates that 3NBCN holds more 
+unpaired electrons, further confirming that abundant C vacancies have 
+been successfully introduced. Commonly, the presence of carbon vacancies is beneficial to improve the electron delocalization ability, 
+promote the separation efficiency of photoinduced e−/h+ pairs and 
+accelerate the directional transfer of electrons, resulting in effectively 
+enhanced photocatalytic activity [63]. 
+
+To further explore the effect of NaBH4 treatment on the optical 
+properties of g-C3N4, the optical response of all the photocatalysts was 
+tested via a UV–Vis spectrometer with tungsten and deuterium lamps. 
+Obviously, the light absorption edge of g-C3N4 samples treated by 
+NaBH4 appears a slight redshift because of the formation of C vacancies 
+(Fig. 5A). In addition, all the photocatalysts treated by NaBH4 show 
+stronger absorption capacity than the reference GCN from 350 nm to 
+700 nm. This interesting phenomenon implies that treatment of g-C3N4 
+
+Fig. 4. XPS spectra (A), C 1s (B), N 1s (C) and LT-ESR signals (D) of GCN and 3NBCN. 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+6
+
+by NaBH4 can effectively regulate the light absorption of g-C3N4, thus 
+absorbing more and longer wavelength sunlight and stimulating photogenerated electrons to jump from the bottom of the valence band (VB) 
+to the top of the conduction band (CB) to participate in the reduction 
+reaction. Besides, the Tauc curves of GCN and 3NBCN samples were 
+plotted according to the calculation results of the Kubelka-Munk formula (Fig. 5B). The tangent of the Tauc curves of the two samples was 
+plotted, and the X-axis intercept is recognized as the band gap (Eg) of the 
+sample, so the Eg of 3NBCN and GCN is 2.70 eV and 2.75 eV, respectively. Commonly, the small bandgap can largely improve the light absorption performance, which is favorable for the migration of 
+photogenerated electrons and the improvement of photocatalytic activity [53,64]. Fig. 5C shows the VB edge potential of reference g-C3N4 is 
+directly obtained to be 1.52 eV from the XPS valence band spectrum. To 
+more clearly understand the structure of the semiconductors and the 
+photocatalytic mechanism for the redox reaction, the CB and VB edge 
+potential of GCN and 3NBCN were calculated based on the following 
+formula [65,66]: 
+
+EVB = X - Ee + 0.5Eg 
+
+ECB = EVB −
+Eg 
+
+Where the specific value of X is 4.64 eV, which represents the electronegativity of g-C3N4. The value of Ee is 4.5 eV, which is the hydrogen- 
+scale free-electron energy. Accordingly, the ECB of GCN and 3NBCN is 
+−1.23 eV and −1.21 eV, and the EVB of GCN and 3NBCN is 1.52 eV and 
+1.49 eV, respectively. The VB position calculated by the equation fits 
+well with the VB-XPS result. Impressively, it is apparent that both GCN 
+and 3NBCN have a negative conduction potential, which implies that 
+
+both samples have a strong reductive capacity, and the reductive potential of both samples is considerably higher than the theoretical 
+requirement of hydrogen evolution from photocatalytic water splitting 
+according to the bandgap structure diagram (Fig. 5D) [67]. The results 
+firmly support that NaBH4 treatment can effectively optimize the optical 
+structure of g-C3N4 to improve the utilization of light and stimulate more 
+electrons to transfer to the CB, resulting in excellent photocatalytic 
+reduction activity. 
+
+In order to verify the effect of the presence of abundant C vacancies 
+on the band structure of the photocatalyst, DFT calculations were performed. Since the internal atoms of g-C3N4 are arranged in order and 
+have high symmetry, C and N atoms can be divided into two types of C 
+and three types of N, which can be labeled as C l, C 2, N l, N 2, and N 3, 
+respectively, as depicted in Fig. 6A. According to the XPS spectrum results of N 1s, the content of N-(C)2 in 3NBCN decreases dramatically, 
+suggesting that the C vacancies can be caused by the absence of C 1 
+atoms. Namely, no C 1 atoms exist in the structure of 3NBCN when 
+optimizing the computational model. Fig. 6B displays the calculated 
+band structure of GCN after geometric optimization, and the Eg of the 
+reference g-C3N4 is 1.60 eV, which is lower than the experimental value 
+due to PBE functional usually underestimates the actual value of the 
+band gap from its limitations [68–70]. The calculated Eg of 3NBCN is 
+only 1.28 eV (Fig. 6D), The obvious decreased trend of the bandgap is 
+highly in agreement with the experimental results, which solidly validates that the existence of C defects successfully lowers the bandgap. 
+Fig. 6C and E illustrate the density of states (DOS) of GCN and 3NBCN, 
+respectively. It is clear that the N-p orbital mainly contributes to the VB 
+of both samples, while the CB is determined by both C-p and N-p orbitals 
+[71,72]. 
+
+Fig. 5. UV–Vis DRS of all the samples (A); Tauc curves (B); VB-XPS spectra (C); Bandgap structures diagram (D). 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+7
+
+Surface photovoltage spectroscopy (SPS) can vividly highlight the 
+separation efficiency of photoexcited e−/h+ pairs excited by light with 
+different wavelengths and the rate of directional electron migration 
+under the support of conductive glass. Fig. 7A shows the SPS spectra of 
+the prepared samples under light exposure. All the samples show 
+obvious SPS response signals in the wavelength range of 300 nm–500 
+nm, and all the g-C3N4 photocatalysts treated by NaBH4 demonstrate 
+stronger SPS response than the blank g-C3N4. It is generally believed that 
+a high SPS response signal represents the high level of photoexcited e−/ 
+h+ pairs separation efficiency and the high-speed transition behavior of 
+photogenerated electrons. It is evident that enhanced visible-light- 
+driven SPS response is induced by C vacancies originating from NaBH4 
+treatment. Interestingly, as the increasing of NaBH4 concentration, the 
+SPS response of the modified samples gradually increases as the concentration of NaBH4 elevates, and 3NBCN samples show the best SPS 
+response. However, excessive NaBH4 will induce more defects, which 
+
+will be the recombination centers of photoinduced carriers, leading to 
+weak SPS response [73,74]. Electrochemical experiments were performed in a mild liquid phase environment with three electrodes 
+(conductive rod coated with a photocatalyst, calomel, and platinum 
+sheet). According to the test principle of the transient photocurrent 
+density curve, the higher the transient photocurrent density of the 
+photocatalysts under light irradiation, the higher the separation efficiency of photogenerated charge pairs [75,76]. As illustrated in Fig. 7B, 
+all the g-C3N4 photocatalysts treated by NaBH4 exhibit stronger photocurrent density than the reference GCN samples in a five-switching lamp 
+cycle, and the photocurrent density signal of the 3NBCN is about 4.8 
+folds of that of reference GCN. Furthermore, the electrochemical 
+impedance spectroscopy (EIS) of all the prepared photocatalysts was 
+further tested. As exhibited in Fig. 7C, the EIS curves of the sample after 
+illumination were fitted according to the equivalent circuit diagram 
+shown in the illustration, and the Nyquist curve of 3NBCN sample has 
+
+Fig. 6. Model of calculation (A); The calculated band structures and DOS of GCN (B, C) and 3NBCN (D, E). 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+8
+
+the largest bending degree and is closest to the complete semicircle 
+shape. According to the EIS test principle, the charge transfer resistance 
+of 3NBCN is the lowest, and the transfer rate of photogenerated electrons is the fastest [77,78]. The three photoelectric performance tests 
+firmly confirm that 3NBCN has the highest photogenerated charge pairs 
+separate and transfer efficiency during the photocatalytic process, 
+therefore, it is anticipated that 3NBCN will demonstrate the best photocatalytic performance in the test of the photocatalytic reduction 
+reaction. 
+
+The photocatalytic activities of all the photocatalysts were evaluated 
+via measuring visible-light-driven water splitting for H2 evolution and 
+the outcomes are depicted in Fig. 8A. Under visible light exposure for 4 
+h, the cumulative H2 evolution amount on all the g-C3N4 samples treated 
+by NaBH4 is higher than that of GCN. The variation law of H2 evolution 
+efficiency over the prepared samples is further analyzed (Fig. 8B). It can 
+be seen that 3NBCN with outstanding photoelectric properties shows the 
+highest H2 evolution rate, reaching 1764.9 μmol g−1 h−1, which is nearly 
+8.56 folds of that of reference GCN (206.3 μmol g−1 h−1). Interestingly, 
+with the further increase of NaBH4 concentration, the H2 evolution efficiency begins to drop significantly. The H2 evolution efficiency of 
+4NBCN and 5NBCN is only 1158.8 μmol g−1 h−1 and 1046.5 μmol g−1 
+
+h−1, respectively. The reason for the considerable decrease in photocatalytic activity can be attributed to the excessive C vacancies, which 
+will become the electron recombination center, hindering the smooth 
+transmission of electrons, leading to the reduction of the transfer path of 
+photogenerated electrons, and thus the number of electrons that can 
+reach CB is seriously reduced. The enhanced photocatalytic H2 evolution 
+performance of g-C3N4 can be attributed to the formation of an appropriate amount of C vacancies, which increases the adsorption sites, expands the range of light absorption, reduces the electron transition gap, 
+
+and further accelerates the photoinduced charge pairs separate and 
+migrate. To investigate the stability of g-C3N4 treated, the 3NBCN 
+sample was investigated for four cycles of photocatalytic H2 generated. 
+The H2 evolution amount on the 3NBCN sample remains at a high level 
+after four cycles (Fig. 8C). Meanwhile, Fig. 8D shows the XRD pattern of 
+the sample after four cycles. Compared with the original sample, no new 
+peaks were detected, which means that the g-C3N4 photocatalysts have 
+exceptional stability. Moreover, the photocatalytic hydrogen production 
+activity of 3NBCN was compared with reported g-C3N4-based photocatalysts, as displayed in Table 1, and the results solidly support that the 
+3NBCN sample has a preferable application prospect. 
+The catalytic properties of GCN and 3NBCN samples were further 
+investigated by visible-light-driven photocatalytic removal of Cr(VI). 
+The removal curves of Cr(VI) over the GCN and 3NBCN with visible light 
+irradiation for 40 min were displayed in Fig. 9A. Specifically, 70.8% of 
+Cr(VI) can be effectively reduced over 3NBCN, but only 24.8% of Cr(VI) 
+can be reduced by GCN. Fig. 9B shows the first-order kinetic curves of 
+the reduction reaction of Cr(VI) on the samples fitted according to the 
+equation ln(C0/Ct) = kt. Therein, k in the equation represents the slope 
+of the first-order kinetic fitting curve, namely the elimination rate 
+constant of Cr(VI) in the equation, C0 and Ct is the concentration of Cr 
+(VI) when the exposure time is 0 and t, respectively. Specifically, the k 
+value of Cr(VI) over 3NBCN is 0.028 min−1, which is 3.38-fold higher 
+than that over the reference GCN (0.0066 min−1). Accordingly, the 
+removal of Cr(VI) experimental results further support that NaBH4 
+treatment can significantly ameliorate the visible-light responsive catalytic performance of g-C3N4. 
+
+A reasonable mechanism for boosted g-C3N4-based photocatalytic 
+reduction of H2O and Cr(VI) is proposed based on experimental and 
+theoretical results and displayed in Fig. 10. Since the CB edge potential 
+
+Fig. 7. SPS response (A), photocurrent density signal (B) and EIS spectrum (C) of all photocatalysts. 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+9
+
+of the prepared photocatalysts is located at the ideal reduction energy 
+(~−1.2 eV), the e−/h+ pairs generated by light will be effectively 
+separated, and the electrons can directly participate in the photocatalytic reduction of Cr(VI). For photocatalytic mechanism of g-C3N4, 
+the electrons from CB of g-C3N4 can split water to generate hydrogen 
+with the aid of Pt [56,71,79,80], the electrons from CB of g-C3N4 also 
+can reduce Cr(VI) to Cr(III). Meanwhile, a large number of holes from VB 
+can be consumed by the sacrifice agent triethanolamine (TEOA) to boost 
+photocatalytic splitting water efficiency. In general, the photocatalytic 
+reduction mechanism for g-C3N4 can be expressed as the following 
+equations (1)–(4). For NBCN with abundant C defects, a defect level will 
+be formed below the conduction band, greatly reducing energy demand 
+for the electronic excitation and the recombination rate of photogenerated carriers, accelerating the electron transfer rate, and demonstrating higher photocatalytic reduction activity [24,52,81]. Therefore, 
+treatment of g-C3N4 by NaBH4 can introduce suitable C vacancies to 
+drastically ameliorate the photocatalytic performance of g-C3N4. This 
+study demonstrates a relatively simple and practical approach to 
+
+contrast C-vacancies to significantly boost the photocatalytic performance of g-C3N4. 
+
+g-C3N4 + hv → g-C3N4(e−+ h+) 
+(1) 
+
+Cr2O7
+
+2−+ 14H+ + 6e−→ 2Cr3+ + 7H2O 
+(2) 
+
+2H+ + 2e−→ H2 
+(3) 
+
+TEOA + h+ → TEOA+
+(4) 
+
+4. Conclusion 
+
+To sum up, g-C3N4 photocatalysts with enriched carbon vacancies 
+were prepared by NaBH4 treatment as proven by EDS, XPS, and ESR 
+measurements. The formed carbon vacancies dramatically boost the 
+availability of photogenerated carriers, as suggested by photoelectric 
+
+Fig. 8. The cumulative amount (A) and rate (B) of hydrogen production on all samples; four-cycle H2 evolution experiment over 3NBCN sample (C); XRD patterns of 
+3NBCN before and after four cycles for photocatalytic product H2 (D). 
+
+Table 1 
+Comparison of g-C3N4 photocatalysts for H2 evolution. 
+
+| Photocatalyst | Raw materials | Co-catalyst | Sacrificial agent | Light Source | H2 rate (μmol⋅g−1⋅h−1) | Ref. |
+|---|---|---|---|---|---|---|
+| P–CNS | Melamine | Pt (3 wt%) | TEOA (10 vol%) | 300 W Xe lamp (λ > 420 nm) | 1682 | [30] |
+| U-ECN | Melamine | Pt | TEOA (10 vol%) | 300 W Xe lamp (λ > 420 nm) | 836 | [63] |
+| SbVO4/g-C3N4 | Melamine | / | Methanol (20 vol%) | 300 W Xe lamp | 752 | [82] |
+| CN3 | Melamine | Pt (1 wt%) | Methanol (10 vol%) | 300 W Xe lamp (λ > 400 nm) | 1160 | [83] |
+| Na-CMCN | Melamine | Pt (3 wt%) | TEOA (10 vol%) | 300 W Xe lamp (λ > 420 nm) | 985 | [84] |
+| g-C3N4 | Melamine | Pt (3 wt%) | TEOA (15 vol%) | 300 W Xe lamp (λ > 420 nm) | 1764.9 | This work |
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+10
+
+tests. Under the excitation of visible light, all the g-C3N4 samples treated 
+by NaBH4 display higher cumulative H2 evolution than GCN after 4 h. 
+The photocatalytic H2 evolution efficiency of 3NBCN is 7.6 folds higher 
+than that of reference GCN, and the activity of 3NBCN toward reduction 
+of Cr(VI) is 3.4 folds higher than that of the reference catalyst. Particularly, the samples hold superior stability. This work paves a facile and 
+practical avenue to construction defects to improve the low separation 
+and migration efficiency of photogenerated carriers of g-C3N4, and 
+remarkably boost the photocatalytic reduction ability of g-C3N4, 
+
+demonstrating promising application aspects in solving the energy and 
+environment crisis. 
+
+CRediT author statement 
+
+Zhengdong Xu: Writing - original draft. Jiahua Zhang: Calculation. 
+Jiao Wu: Investigation. Junbo Zhong: Direction. Minjiao Li: Supervision. 
+
+Fig. 9. Photocatalytic reduction of Cr(VI) on GCN and 3NBCN sample (A) and the corresponding first order kinetic fitting curve (B). 
+
+Fig. 10. Photocatalytic enhancement mechanism for g-C3N4 catalysts with C vacancies. 
+
+Z. Xu et al. 
+Materials Science in Semiconductor Processing 161 (2023) 107459
+
+11
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial 
+interests or personal relationships that could have appeared to influence 
+the work reported in this paper. 
+
+Data availability 
+
+Data will be made available on request. 
+
+Acknowledgments 
+
+The authors thank the City of Zigong (2020YGJC27) for its financial 
+support. 
+
+Appendix A. Supplementary data 
+
+Supplementary data to this article can be found online at https://doi. 
+org/10.1016/j.mssp.2023.107459.

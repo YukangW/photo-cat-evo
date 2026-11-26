@@ -1,0 +1,1632 @@
+{
+  "plan": {
+    "targets": [
+      {
+        "name": "BET surface area",
+        "unit": "m2 g-1",
+        "details": "best sample",
+        "parameter": "BET surface area"
+      },
+      {
+        "name": "band gap",
+        "unit": "eV",
+        "details": "best sample",
+        "parameter": "band gap"
+      },
+      {
+        "name": "C:N ratio",
+        "unit": "",
+        "details": "best sample",
+        "parameter": "C:N ratio"
+      },
+      {
+        "name": "H2 evolution rate",
+        "unit": "µmol g-1 h-1",
+        "details": "best sample",
+        "parameter": "H2 evolution rate"
+      },
+      {
+        "name": "defect type",
+        "unit": "",
+        "details": "best sample",
+        "parameter": "defect type"
+      },
+      {
+        "name": "heating rate",
+        "unit": "°C min-1",
+        "details": "best sample",
+        "parameter": "heating rate"
+      },
+      {
+        "name": "heating temperature",
+        "unit": "°C",
+        "details": "best sample",
+        "parameter": "heating temperature"
+      },
+      {
+        "name": "heating time",
+        "unit": "h",
+        "details": "best sample",
+        "parameter": "heating time"
+      },
+      {
+        "name": "atmosphere",
+        "unit": "",
+        "details": "best sample",
+        "parameter": "atmosphere"
+      }
+    ],
+    "trace": [
+      {
+        "step": 1,
+        "tool": "set_targets",
+        "args": {
+          "targets": [
+            {
+              "details": "best sample",
+              "name": "BET surface area",
+              "unit": "m2 g-1"
+            },
+            {
+              "details": "best sample",
+              "name": "band gap",
+              "unit": "eV"
+            },
+            {
+              "details": "best sample",
+              "name": "C:N ratio",
+              "unit": ""
+            },
+            {
+              "details": "best sample",
+              "name": "H2 evolution rate",
+              "unit": "µmol g-1 h-1"
+            },
+            {
+              "details": "best sample",
+              "name": "defect type",
+              "unit": ""
+            },
+            {
+              "details": "best sample",
+              "name": "heating rate",
+              "unit": "°C min-1"
+            },
+            {
+              "details": "best sample",
+              "name": "heating temperature",
+              "unit": "°C"
+            },
+            {
+              "details": "best sample",
+              "name": "heating time",
+              "unit": "h"
+            },
+            {
+              "details": "best sample",
+              "name": "atmosphere",
+              "unit": ""
+            }
+          ]
+        },
+        "result": {
+          "saved": true,
+          "n_targets": 9
+        }
+      }
+    ]
+  },
+  "items": [
+    {
+      "item": "BET surface area",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "BET"
+          },
+          "result": {
+            "keyword": "BET",
+            "n_hits": 9,
+            "sentences": [
+              "Among them, surface amino group modification of the material for better photocatalytic activity has attracted much attention.",
+              "A fully automated specific surface area and pore space analyser (Tristar II 3020 M) was used to record the BET measurements.",
+              "There were no significant differences in the position of the XRD peaks between g-C3N4 and urea-treated g-C3N4.",
+              "The C–N or C––N stretching vibrations were likely the cause of the peaks between 1200 and 1650 cm−1 in the g-C3N4.",
+              "This suggests a possible enhanced close interaction between the nitrogen atoms and the surrounding carbon atoms.",
+              "Carbon 219 (2024) 118841 4 Surface morphology and structural characteristics of g-C3N4 and CNU20 were explored through SEM, TEM, and BET analyses.",
+              "Based on the relationship between the KM function and the excitation wavelength energy of the UV–visible spectrum, the band gap of the g-C3N4 and CNU20 samples was calculated to be 2.41 and 2.33 eV, respectively (Fig.",
+              "Thus, the urea-treated g-C3N4 effectively enhanced the efficiency of charge separation between photoinduced electrons and holes, while also accelerating carrier migration."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "surface area"
+          },
+          "result": {
+            "keyword": "surface area",
+            "n_hits": 3,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "A fully automated specific surface area and pore space analyser (Tristar II 3020 M) was used to record the BET measurements.",
+              "Nitrogen adsorption-desorption analysis results (Table S3) indicated that CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "m2 g"
+          },
+          "result": {
+            "keyword": "m2 g",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "specific surface area"
+          },
+          "result": {
+            "keyword": "specific surface area",
+            "n_hits": 3,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "A fully automated specific surface area and pore space analyser (Tristar II 3020 M) was used to record the BET measurements.",
+              "Nitrogen adsorption-desorption analysis results (Table S3) indicated that CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "pore"
+          },
+          "result": {
+            "keyword": "pore",
+            "n_hits": 3,
+            "sentences": [
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "A fully automated specific surface area and pore space analyser (Tristar II 3020 M) was used to record the BET measurements.",
+              "Nitrogen adsorption-desorption analysis results (Table S3) indicated that CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4."
+            ]
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "adsorption"
+          },
+          "result": {
+            "keyword": "adsorption",
+            "n_hits": 2,
+            "sentences": [
+              "Nitrogen adsorption-desorption analysis results (Table S3) indicated that CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4.",
+              "The increase in hydrophilicity facilitated the adsorption of H+."
+            ]
+          }
+        },
+        {
+          "step": 7,
+          "tool": "save_result",
+          "args": {
+            "value": "None",
+            "unit": "m2 g-1",
+            "evidence": "",
+            "sample_name": "Pt-CNU20",
+            "method": "",
+            "other_samples": [],
+            "range": "",
+            "range_evidence": "",
+            "error": "",
+            "error_evidence": "",
+            "note": "BET surface area values are reported in Table S3 (supplementary table) but not in the main text. The text only states that \"CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4\" without providing actual numerical values."
+          },
+          "result": {
+            "saved": false,
+            "problems": [
+              "main sample 'Pt-CNU20': Quote too short. Copy a full phrase from the paper.",
+              "main sample 'Pt-CNU20': the text value 'None' does not appear in the evidence quote."
+            ],
+            "instruction": "Fix these problems and call save_result again (you can drop samples whose value you cannot quote), or call save_result with value=null if this data is not reported for any sample of this paper."
+          }
+        },
+        {
+          "step": 8,
+          "tool": "save_result",
+          "args": {
+            "value": "None",
+            "unit": "m2 g-1",
+            "evidence": "",
+            "sample_name": "Pt-CNU20",
+            "method": "",
+            "other_samples": [],
+            "range": "",
+            "range_evidence": "",
+            "error": "",
+            "error_evidence": "",
+            "note": "BET surface area values are reported in Table S3 (supplementary table) but not in the main text. The text only states that \"CNU20 exhibited slightly larger specific surface area, pore volume, and pore size in specific regions compared to g-C3N4\" without providing actual numerical values."
+          },
+          "result": {
+            "saved": false,
+            "problems": [
+              "main sample 'Pt-CNU20': Quote too short. Copy a full phrase from the paper.",
+              "main sample 'Pt-CNU20': the text value 'None' does not appear in the evidence quote."
+            ],
+            "instruction": "Fix these problems and call save_result again (you can drop samples whose value you cannot quote), or call save_result with value=null if this data is not reported for any sample of this paper."
+          }
+        }
+      ]
+    },
+    {
+      "item": "band gap",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "band gap"
+          },
+          "result": {
+            "keyword": "band gap",
+            "n_hits": 2,
+            "sentences": [
+              "Based on the relationship between the KM function and the excitation wavelength energy of the UV–visible spectrum, the band gap of the g-C3N4 and CNU20 samples was calculated to be 2.41 and 2.33 eV, respectively (Fig.",
+              "Inset of (a): the band gap of CN and CNU20 derived by the Kubelka–Munk function."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "bandgap"
+          },
+          "result": {
+            "keyword": "bandgap",
+            "n_hits": 4,
+            "sentences": [
+              "This is due to its narrow bandgap width, appropriate valence band and conducting band positions, two-dimensional layered structure, and robust stability [10–13].",
+              "The narrowing of the CNU20 bandgap may be due to the presence of amino groups decreasing the conduction band.",
+              "The reduced bandgap enables g-C3N4 to absorb more visible light, broadening the light absorption range of the material.",
+              "When the irradiation wavelength reached 550 nm, there was no detectable hydrogen, indicating that the photocatalytic response of the Pt–CNU20 composite in visible light resulted from the bandgap transition between the conduction and valence bands."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Eg"
+          },
+          "result": {
+            "keyword": "Eg",
+            "n_hits": 9,
+            "sentences": [
+              "Semiconductor photocatalysis has garnered considerable interest because of its potential to decompose water for hydrogen production, convert carbon dioxide into organic fuels, degrade organic pollutants, and catalyze organic synthesis [5–9].",
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17].",
+              "Owing to their excellent electron-withdrawing abilities, surface functional groups (-OH, –C––O, –COOH, –NH2, etc.) are employed to regulate the electronic structure and photocatalytic properties of g-C3N4 [18–22].",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "reported an oxalic acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets.",
+              "In detail, 50 mg of g-C3N4 was dispersed into 30 mL of ethylene glycol (EG) and ultrasonicated for 20 min.",
+              "At the end of the reaction, the gas produced in the reactor was degassed using high-purity N2.",
+              "4(a, c)), forming an irregular two- dimensional layered structure."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Tauc"
+          },
+          "result": {
+            "keyword": "Tauc",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "absorption"
+          },
+          "result": {
+            "keyword": "absorption",
+            "n_hits": 7,
+            "sentences": [
+              "The structure and photoelectric properties of amino-modified samples were characterized by XRD, Raman, FT-IR, XPS, absorption, SEM, TEM, and EIS.",
+              "UV–vis diffuse reflectance spectroscopy was used to examine the light absorption properties of all samples.",
+              "5(a) shows the UV–vis absorption spectra of all treated samples, which closely resemble the absorption spectra of g-C3N4.",
+              "S2, the data suggested that the light absorption of the samples increased after treatment with urea, likely resulting from the Fig.",
+              "The reduced bandgap enables g-C3N4 to absorb more visible light, broadening the light absorption range of the material.",
+              "Absorption (a) spectra of CN, CNU5, CNU10, CNU20, CNU30, and CNU50; the VB spectra (b) and the energy band structure (c) of CN and CNU20; photoluminescence (d) spectra of CN, CNU5, CNU10, CNU20, CNU30, and CNU50; EIS spectra (e) and transient photocurrent density responses (f) of CN and CNU20.",
+              "The hydrogen production rate trend coincided with the absorption spectrum trend, which decreased as the irradiation wavelength increased."
+            ]
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "CNU20"
+          },
+          "result": {
+            "keyword": "CNU20",
+            "n_hits": 44,
+            "sentences": [
+              "The intensity of the interlayer stacking (002) peak of CNU20 decreased, which may be due to the decrease in the content of carbon nitride lamellae after the solvent heat treatment of urea.",
+              "2(b)) that the N–H band transmittance of CN, CNU10, CNU20, and CNU50 was 78.8, 76.8, 74.4, and 72.1 %, respectively.",
+              "The chemical compositions and electronic structures of g-C3N4 and CNU20 were analyzed using XPS, as shown in Fig.",
+              "In contrast, CNU20 displays a new peak at 286.1 eV, which was attributed to the carbon atoms in C–NH, increased to 5.45 % (Table S1) [40,41].",
+              "The emergence of the new peak implies that amino groups were present on the synthesized CNU20 surface.",
+              "Compared to g-C3N4, the peaks observed in the N1s spectrum of CNU20 were shifted toward a higher binding energy, indicating a potential rise in the nitrogen content of the sample.",
+              "The N–H contents for the g-C3N4 and CNU20 samples were calculated to be 8.27 % and 10.40 %, respectively (Table S1).",
+              "Meanwhile, we performed elemental analysis tests on g-C3N4 and CNU20 (Table S2)."
+            ]
+          }
+        },
+        {
+          "step": 7,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "the band gap of the g-C3N4 and CNU20 samples was calculated to be 2.41 and 2.33 eV, respectively (Fig. inset of 5(a))"
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 8,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Pt-CNU20"
+          },
+          "result": {
+            "keyword": "Pt-CNU20",
+            "n_hits": 0,
+            "sentences": []
+          }
+        }
+      ]
+    },
+    {
+      "item": "C:N ratio",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "C:N ratio"
+          },
+          "result": {
+            "keyword": "C:N ratio",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "C/N ratio"
+          },
+          "result": {
+            "keyword": "C/N ratio",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "elemental analysis"
+          },
+          "result": {
+            "keyword": "elemental analysis",
+            "n_hits": 1,
+            "sentences": [
+              "Meanwhile, we performed elemental analysis tests on g-C3N4 and CNU20 (Table S2)."
+            ]
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "atomic ratio"
+          },
+          "result": {
+            "keyword": "atomic ratio",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "N/C"
+          },
+          "result": {
+            "keyword": "N/C",
+            "n_hits": 1,
+            "sentences": [
+              "The results showed that the N/C mass ratio of the treated samples was 1.77, which was higher than that of g-C3N4 (1.57) obtained directly from melamine without pre-treatment."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "carbon to nitrogen"
+          },
+          "result": {
+            "keyword": "carbon to nitrogen",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Table S2"
+          },
+          "result": {
+            "keyword": "Table S2",
+            "n_hits": 1,
+            "sentences": [
+              "Meanwhile, we performed elemental analysis tests on g-C3N4 and CNU20 (Table S2)."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "g-C3N4"
+          },
+          "result": {
+            "keyword": "g-C3N4",
+            "n_hits": 68,
+            "sentences": [
+              "A carbon-based photocatalyst that has received extensive research attention is graphitic carbon nitride (g-C3N4).",
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17].",
+              "Owing to their excellent electron-withdrawing abilities, surface functional groups (-OH, –C––O, –COOH, –NH2, etc.) are employed to regulate the electronic structure and photocatalytic properties of g-C3N4 [18–22].",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics.",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "reported an oxalic acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets.",
+              "These studies have shown that the increased photocatalytic activity of g-C3N4 is mainly attributed to the surface amino groups.",
+              "It has been noted that the amino groups functioned as hole stabilizers, and the introduction of amino groups into g-C3N4 is beneficial for prolonging the lifetime of the excited state in the photocatalytic reaction [26–29]."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "C3N4"
+          },
+          "result": {
+            "keyword": "C3N4",
+            "n_hits": 74,
+            "sentences": [
+              "The resulting Pt/g- C3N4 composite exhibited excellent visible-light-driven activity for hydrogen evolution.",
+              "A carbon-based photocatalyst that has received extensive research attention is graphitic carbon nitride (g-C3N4).",
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17].",
+              "Owing to their excellent electron-withdrawing abilities, surface functional groups (-OH, –C––O, –COOH, –NH2, etc.) are employed to regulate the electronic structure and photocatalytic properties of g-C3N4 [18–22].",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics.",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "reported an oxalic acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets.",
+              "These studies have shown that the increased photocatalytic activity of g-C3N4 is mainly attributed to the surface amino groups."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "ratio"
+          },
+          "result": {
+            "keyword": "ratio",
+            "n_hits": 21,
+            "sentences": [
+              "The experimental data suggested that the introduced amino groups modified the morphology and structure of bulk carbon nitride, and improved the charge separation.",
+              "The results indicated that the introduction of amino functional groups can not only modulate the morphology and structure of g-C3N4, but also improve the charge separation.",
+              "Preparation of bulk g-C3N4 All reagents were purchased from Aladdin Biochemical Technology Co.",
+              "The C–N or C––N stretching vibrations were likely the cause of the peaks between 1200 and 1650 cm−1 in the g-C3N4.",
+              "The results showed that the N/C mass ratio of the treated samples was 1.77, which was higher than that of g-C3N4 (1.57) obtained directly from melamine without pre-treatment.",
+              "The bulk g-C3N4, synthesized using melamine, exhibited extensive stacking, attributed to the agglomeration of the tri-s-triazine structure (Fig.",
+              "Consequently, the enhanced photocatalytic activity observed in the subsequent hydrogen production reaction was also congruent with the alterations in morphology.",
+              "Thus, the urea-treated g-C3N4 effectively enhanced the efficiency of charge separation between photoinduced electrons and holes, while also accelerating carrier migration."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "XPS"
+          },
+          "result": {
+            "keyword": "XPS",
+            "n_hits": 6,
+            "sentences": [
+              "The structure and photoelectric properties of amino-modified samples were characterized by XRD, Raman, FT-IR, XPS, absorption, SEM, TEM, and EIS.",
+              "The electronic structure of the samples was recorded using an ESCALAB 250Xi X-ray photoelectron spectroscope (XPS).",
+              "The chemical compositions and electronic structures of g-C3N4 and CNU20 were analyzed using XPS, as shown in Fig.",
+              "XPS VB spectra and Kubelka-Munk functions were used to study the energy band structures of g-C3N4 and CNU20 [46,47].",
+              "The structures of the Pt–CNU composites after 6 rounds of reaction were characterized by XRD, XPS and SEM (Fig.",
+              "The XPS spectra of Pt 4f in the Pt–CN and Pt–CNU20 composites are shown in Fig."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "The results showed that the N/C mass ratio of the treated samples was 1.77, which was higher than that of g-C3N4 (1.57) obtained directly from melamine without pre-treatment."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 6,
+          "tool": "save_result",
+          "args": {
+            "value": "",
+            "unit": "",
+            "evidence": "",
+            "sample_name": "",
+            "range": "",
+            "error": "",
+            "note": "C:N atomic ratio is not reported in this paper. The paper only reports N/C mass ratio from elemental analysis (1.77 for treated samples, 1.57 for bulk g-C3N4), which is a different quantity than C:N atomic ratio."
+          },
+          "result": {
+            "saved": true,
+            "status": "not_reported"
+          }
+        }
+      ]
+    },
+    {
+      "item": "H2 evolution rate",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "hydrogen production rate"
+          },
+          "result": {
+            "keyword": "hydrogen production rate",
+            "n_hits": 8,
+            "sentences": [
+              "A hydrogen production rate of 130.7 μmol h−1 with an AQE of 5.58 % at 420 nm was achieved by deposition of 1 wt% Pt cocatalyst [25].",
+              "When amino groups were introduced on its surface alone, the hydrogen production rate roughly showed an increasing trend, but not a significant increase and the hydrogen production rate of CNU50 was only slightly increased to 6.28 μmol h−1.",
+              "It was shown that the nitrogen-enrich brought about by the amino group is positively optimized for the hydrogen production rate of the carbon nitride.",
+              "When the Pt nanoparticles were deposited, the hydrogen production rate was greatly increased compared with that of pristine g-C3N4.",
+              "In addition, the hydrogen production rate escalates within a specific range as the urea content increases.",
+              "The hydrogen production rate trend coincided with the absorption spectrum trend, which decreased as the irradiation wavelength increased.",
+              "The hydrogen production rates were 211.99, 154.78, 84.12, 40.38, and 12.79 μmol h−1 at 435, 450, 475, 500, and 520 nm, respectively.",
+              "(a) Photocatalytic hydrogen production rate of the Pt–CNU20 composite under visible light irradiation at different wavelengths and (b) the stability test of Pt–CNU20 composite."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "H2 evolution"
+          },
+          "result": {
+            "keyword": "H2 evolution",
+            "n_hits": 1,
+            "sentences": [
+              "(a) The content of H2 versus time and (b) the content of H2 versus time in the presence of Pt and (c) the average H2 evolution rate of all photocatalysts and (d) the effects of Pt contents on the photocatalytic performance."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "μmol"
+          },
+          "result": {
+            "keyword": "μmol",
+            "n_hits": 6,
+            "sentences": [
+              "A high rate of 410.51 μmol h−1 with an apparent quantum efficiency of 17 % was achieved, which is 85.5 times higher than that of bulk carbon nitride.",
+              "A hydrogen production rate of 130.7 μmol h−1 with an AQE of 5.58 % at 420 nm was achieved by deposition of 1 wt% Pt cocatalyst [25].",
+              "The rate of photocatalytic hydrogen production was remarkably low for g- C3N4 at only 4.80 μmol h−1.",
+              "When amino groups were introduced on its surface alone, the hydrogen production rate roughly showed an increasing trend, but not a significant increase and the hydrogen production rate of CNU50 was only slightly increased to 6.28 μmol h−1.",
+              "When the Pt content was 0.5 wt% and the urea content was 20 mg, Pt–CNU20 exhibited the highest photocatalytic hydrogen production performance, with a rate of 410.51 μmol h−1, which was 5.5 times greater than that of Pt–CN (74.03 μmol h−1) and 85.5 times greater than that of g-C3N4 (4.8 μmol h−1).",
+              "The hydrogen production rates were 211.99, 154.78, 84.12, 40.38, and 12.79 μmol h−1 at 435, 450, 475, 500, and 520 nm, respectively."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "The rate of photocatalytic hydrogen production was remarkably low for g-C3N4 at only 4.80 μmol h−1."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 5,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "the hydrogen production rate of CNU50 was only slightly increased to 6.28 μmol h−1."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 6,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "Pt–CNU20 exhibited the highest photocatalytic hydrogen production performance, with a rate of 410.51 μmol h−1, which was 5.5 times greater than that of Pt–CN (74.03 μmol h−1)"
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 7,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "A high rate of 410.51 μmol h−1 with an apparent quantum efficiency of 17 % was achieved"
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 8,
+          "tool": "save_result",
+          "args": {
+            "value": 410.51,
+            "unit": "μmol h−1",
+            "evidence": "Pt–CNU20 exhibited the highest photocatalytic hydrogen production performance, with a rate of 410.51 μmol h−1, which was 5.5 times greater than that of Pt–CN (74.03 μmol h−1) and 85.5 times greater than that of g-C3N4 (4.8 μmol h−1).",
+            "sample_name": "Pt–CNU20",
+            "other_samples": [
+              {
+                "evidence": "and 85.5 times greater than that of g-C3N4 (4.8 μmol h−1).",
+                "sample_name": "g-C3N4",
+                "value": 4.8
+              },
+              {
+                "evidence": "the hydrogen production rate of CNU50 was only slightly increased to 6.28 μmol h−1.",
+                "sample_name": "CNU50",
+                "value": 6.28
+              },
+              {
+                "evidence": "which was 5.5 times greater than that of Pt–CN (74.03 μmol h−1)",
+                "sample_name": "Pt–CN",
+                "value": 74.03
+              }
+            ]
+          },
+          "result": {
+            "saved": true,
+            "status": "verified",
+            "n_samples": 4
+          }
+        }
+      ]
+    },
+    {
+      "item": "defect type",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "defect"
+          },
+          "result": {
+            "keyword": "defect",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "vacancy"
+          },
+          "result": {
+            "keyword": "vacancy",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "doping"
+          },
+          "result": {
+            "keyword": "doping",
+            "n_hits": 1,
+            "sentences": [
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17]."
+            ]
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "EPR"
+          },
+          "result": {
+            "keyword": "EPR",
+            "n_hits": 1,
+            "sentences": [
+              "The obtained samples were labeled CNU-x, where x (x = 5, 10, 20, 30, and 50 mg) represents the content of urea added."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "vacanc"
+          },
+          "result": {
+            "keyword": "vacanc",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "dopant"
+          },
+          "result": {
+            "keyword": "dopant",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "amino"
+          },
+          "result": {
+            "keyword": "amino",
+            "n_hits": 41,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "In this study, amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea.",
+              "The experimental data suggested that the introduced amino groups modified the morphology and structure of bulk carbon nitride, and improved the charge separation.",
+              "More importantly, the enriched amino groups promoted the formation of nitrogen-rich carbon nitride, which was conducive to the deposition and reduction of ultrafine Pt nanoparticles.",
+              "Among them, surface amino group modification of the material for better photocatalytic activity has attracted much attention.",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics.",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "reported an oxalic acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "nitrogen vacancy"
+          },
+          "result": {
+            "keyword": "nitrogen vacancy",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "oxygen vacancy"
+          },
+          "result": {
+            "keyword": "oxygen vacancy",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "carbon vacancy"
+          },
+          "result": {
+            "keyword": "carbon vacancy",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "modification"
+          },
+          "result": {
+            "keyword": "modification",
+            "n_hits": 5,
+            "sentences": [
+              "Among them, surface amino group modification of the material for better photocatalytic activity has attracted much attention.",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "This observation correlated with the subtle variations in morphology before and after urea modification.",
+              "Function of platinum Based on the aforementioned analysis, it is evident that the surface modification of g-C3N4 with urea can introduce amino groups.",
+              "Carbon 219 (2024) 118841 7 photocatalytic hydrogen production performance of the urea modification was substantially improved by the introduction of Pt."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "functional"
+          },
+          "result": {
+            "keyword": "functional",
+            "n_hits": 8,
+            "sentences": [
+              "Research shows that introducing surface functional groups is one of the extensively studied methods to enhance catalytic performance.",
+              "Owing to their excellent electron-withdrawing abilities, surface functional groups (-OH, –C––O, –COOH, –NH2, etc.) are employed to regulate the electronic structure and photocatalytic properties of g-C3N4 [18–22].",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics.",
+              "Although the synthesis and some applications of g-C3N4 with surface functional groups have already been reported, the enhancement of photocatalytic hydrogen production activity directly by amino groups has been limited.",
+              "In this study, amino functional groups modified g-C3N4 composites were prepared using a urea-induced solvothermal method.",
+              "The results indicated that the introduction of amino functional groups can not only modulate the morphology and structure of g-C3N4, but also improve the charge separation.",
+              "The minor peak identified at 401.2 eV was likely due to amino functional groups (N–H).",
+              "The amino-rich functional groups facilitate the binding of Pt atoms, and enhance Pt–N coordination."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "EPR"
+          },
+          "result": {
+            "keyword": "EPR",
+            "n_hits": 1,
+            "sentences": [
+              "The obtained samples were labeled CNU-x, where x (x = 5, 10, 20, 30, and 50 mg) represents the content of urea added."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "ESR"
+          },
+          "result": {
+            "keyword": "ESR",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "nitrogen-rich"
+          },
+          "result": {
+            "keyword": "nitrogen-rich",
+            "n_hits": 2,
+            "sentences": [
+              "More importantly, the enriched amino groups promoted the formation of nitrogen-rich carbon nitride, which was conducive to the deposition and reduction of ultrafine Pt nanoparticles.",
+              "Moreover, the enriched amino groups promoted the formation of nitrogen-rich carbon nitride, which facilitated the binding or intercalation of exotic Pt atoms into the matrix of g-C3N4 as a high- efficiency photocatalytic hydrogen production system."
+            ]
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Pt doping"
+          },
+          "result": {
+            "keyword": "Pt doping",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 7,
+          "tool": "search_text",
+          "args": {
+            "keyword": "imperfection"
+          },
+          "result": {
+            "keyword": "imperfection",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 7,
+          "tool": "search_text",
+          "args": {
+            "keyword": "disorder"
+          },
+          "result": {
+            "keyword": "disorder",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 8,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea"
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        }
+      ]
+    },
+    {
+      "item": "heating rate",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "heating rate"
+          },
+          "result": {
+            "keyword": "heating rate",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "K/min"
+          },
+          "result": {
+            "keyword": "K/min",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "rate"
+          },
+          "result": {
+            "keyword": "rate",
+            "n_hits": 37,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "In this study, amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea.",
+              "A high rate of 410.51 μmol h−1 with an apparent quantum efficiency of 17 % was achieved, which is 85.5 times higher than that of bulk carbon nitride.",
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17].",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics.",
+              "developed a precursor modification strategy to prepare an amino-rich thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the * Corresponding author.",
+              "reported an oxalic acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets.",
+              "A hydrogen production rate of 130.7 μmol h−1 with an AQE of 5.58 % at 420 nm was achieved by deposition of 1 wt% Pt cocatalyst [25]."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "elevated"
+          },
+          "result": {
+            "keyword": "elevated",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "heated"
+          },
+          "result": {
+            "keyword": "heated",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "pyrolysis"
+          },
+          "result": {
+            "keyword": "pyrolysis",
+            "n_hits": 1,
+            "sentences": [
+              "Bulk g-C3N4 was prepared using the pyrolysis method [30]."
+            ]
+          }
+        },
+        {
+          "step": 7,
+          "tool": "search_text",
+          "args": {
+            "keyword": "calcination"
+          },
+          "result": {
+            "keyword": "calcination",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 8,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        }
+      ]
+    },
+    {
+      "item": "heating temperature",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "heated"
+          },
+          "result": {
+            "keyword": "heated",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "pyrolysis"
+          },
+          "result": {
+            "keyword": "pyrolysis",
+            "n_hits": 1,
+            "sentences": [
+              "Bulk g-C3N4 was prepared using the pyrolysis method [30]."
+            ]
+          }
+        },
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "solvothermal"
+          },
+          "result": {
+            "keyword": "solvothermal",
+            "n_hits": 6,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "In this study, amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea.",
+              "In this study, amino functional groups modified g-C3N4 composites were prepared using a urea-induced solvothermal method.",
+              "Synthesis of amino-modified g-C3N4 The synthesis of amino-modified g-C3N4 was carried out using the solvothermal method.",
+              "The results from SEM and TEM revealed a subtle impact on the morphology of g- C3N4 after solvothermal treatment.",
+              "Following solvothermal treatment, CNU20 underwent a transformation into thin layers and acquired a loose structure (Fig."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "823"
+          },
+          "result": {
+            "keyword": "823",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "433"
+          },
+          "result": {
+            "keyword": "433",
+            "n_hits": 1,
+            "sentences": [
+              "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "K"
+          },
+          "result": {
+            "keyword": "K",
+            "n_hits": 72,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "In this study, amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea.",
+              "The experimental data suggested that the introduced amino groups modified the morphology and structure of bulk carbon nitride, and improved the charge separation.",
+              "A high rate of 410.51 μmol h−1 with an apparent quantum efficiency of 17 % was achieved, which is 85.5 times higher than that of bulk carbon nitride.",
+              "The effective approach developed in this work could provide new insights into the design of bulk carbon nitride with enhanced performance.",
+              "However, bulk carbon nitride presents certain drawbacks, including high charge-carrier recombination and limited surface active sites, which severely restrict its catalytic activity.",
+              "To date, numerous improvement strategies have been proposed to resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17].",
+              "reported an amino-functionalized ultrathin g-C3N4 with strong redox capability and accelerated photocatalytic reaction kinetics."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 3,
+          "tool": "check_evidence",
+          "args": {
+            "quote": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h."
+          },
+          "result": {
+            "found": true,
+            "reason": "Quote found in paper."
+          }
+        },
+        {
+          "step": 4,
+          "tool": "save_result",
+          "args": {
+            "value": 160,
+            "unit": "°C",
+            "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+            "sample_name": "Pt–CNU20",
+            "method": "solvothermal treatment",
+            "other_samples": [
+              {
+                "evidence": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+                "note": "pyrolysis method",
+                "sample_name": "g-C3N4",
+                "value": 550
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU5",
+                "value": 160
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU10",
+                "value": 160
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU20",
+                "value": 160
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU30",
+                "value": 160
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU50",
+                "value": 160
+              },
+              {
+                "evidence": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+                "note": "pyrolysis method",
+                "sample_name": "Pt–CN",
+                "value": 550
+              }
+            ],
+            "range": "",
+            "error": ""
+          },
+          "result": {
+            "saved": false,
+            "problems": [
+              "main sample 'Pt–CNU20': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'g-C3N4': the value 550 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'CNU5': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'CNU10': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'CNU20': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'CNU30': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'CNU50': the value 160 does not appear in the evidence quote. Report the number exactly as written in the quote.",
+              "other sample 'Pt–CN': the value 550 does not appear in the evidence quote. Report the number exactly as written in the quote."
+            ],
+            "instruction": "Fix these problems and call save_result again (you can drop samples whose value you cannot quote), or call save_result with value=null if this data is not reported for any sample of this paper."
+          }
+        },
+        {
+          "step": 5,
+          "tool": "save_result",
+          "args": {
+            "value": 433,
+            "unit": "K",
+            "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+            "sample_name": "Pt–CNU20",
+            "method": "solvothermal treatment",
+            "other_samples": [
+              {
+                "evidence": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+                "note": "pyrolysis method",
+                "sample_name": "g-C3N4",
+                "value": 823
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU5",
+                "value": 433
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU10",
+                "value": 433
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU20",
+                "value": 433
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU30",
+                "value": 433
+              },
+              {
+                "evidence": "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+                "note": "solvothermal treatment",
+                "sample_name": "CNU50",
+                "value": 433
+              },
+              {
+                "evidence": "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+                "note": "pyrolysis method",
+                "sample_name": "Pt–CN",
+                "value": 823
+              }
+            ],
+            "range": "",
+            "error": ""
+          },
+          "result": {
+            "saved": true,
+            "status": "verified",
+            "n_samples": 8,
+            "warnings": [
+              "main sample 'Pt–CNU20': sample name 'Pt–CNU20' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'g-C3N4': sample name 'g-C3N4' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'CNU5': sample name 'CNU5' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'CNU10': sample name 'CNU10' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'CNU20': sample name 'CNU20' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'CNU30': sample name 'CNU30' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'CNU50': sample name 'CNU50' is not in the quote; make sure the value really belongs to this sample.",
+              "other sample 'Pt–CN': sample name 'Pt–CN' is not in the quote; make sure the value really belongs to this sample."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "item": "heating time",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "heated kept maintained h"
+          },
+          "result": {
+            "keyword": "heated kept maintained h",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "2 h"
+          },
+          "result": {
+            "keyword": "2 h",
+            "n_hits": 3,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+              "Where standard carbon exhibited a peak value of 284.8 eV, corresponding to a graphitic carbon atom, the characteristic peak at 288.3 eV was the result of sp2 hybridized carbon [38, 39].",
+              "The peak at 398.7 eV was related to a two-coordinated nitrogen atom in the sp2 hybridized nitrogen, whereas the peak at 399.8 eV was associated with a three-coordinated nitrogen atom in the sp3 hybridized nitrogen."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "6 h"
+          },
+          "result": {
+            "keyword": "6 h",
+            "n_hits": 2,
+            "sentences": [
+              "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+              "We assessed the endurance of the Pt–CNU20 composite under visible light exposure for 36 h, as shown in Fig."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "pyrolysis pyrolyzed"
+          },
+          "result": {
+            "keyword": "pyrolysis pyrolyzed",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "calcined annealed"
+          },
+          "result": {
+            "keyword": "calcined annealed",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "stirred 5 h"
+          },
+          "result": {
+            "keyword": "stirred 5 h",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 7,
+          "tool": "search_text",
+          "args": {
+            "keyword": "Pt content was set at 0.5 wt%"
+          },
+          "result": {
+            "keyword": "Pt content was set at 0.5 wt%",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 8,
+          "tool": "search_text",
+          "args": {
+            "keyword": "H2PtCl6"
+          },
+          "result": {
+            "keyword": "H2PtCl6",
+            "n_hits": 2,
+            "sentences": [
+              "Synthesis of the Pt/g-C3N4 composite 100 mg of g-C3N4 or CNU-x was dispersed in 30 mL of distilled water, and a certain content of H2PtCl6⋅6H2O was added during stirring.",
+              "Thus, the introduction of amino groups can improve the reduction efficiency, which can reduce most of the Pt4+ in H2PtCl6 to Pt0."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "item": "atmosphere",
+      "trace": [
+        {
+          "step": 1,
+          "tool": "search_text",
+          "args": {
+            "keyword": "air"
+          },
+          "result": {
+            "keyword": "air",
+            "n_hits": 2,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air.",
+              "In PL spectra, a lower peak intensity indicates a lower compounding rate of photoexcited electron-hole pairs, resulting in higher photocatalytic activity [48]."
+            ]
+          }
+        },
+        {
+          "step": 2,
+          "tool": "search_text",
+          "args": {
+            "keyword": "heated"
+          },
+          "result": {
+            "keyword": "heated",
+            "n_hits": 1,
+            "sentences": [
+              "Specifically, 10 g of melamine was added to an alumina crucible with a lid, heated to 823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h in air."
+            ]
+          }
+        },
+        {
+          "step": 3,
+          "tool": "search_text",
+          "args": {
+            "keyword": "pyrolysis"
+          },
+          "result": {
+            "keyword": "pyrolysis",
+            "n_hits": 1,
+            "sentences": [
+              "Bulk g-C3N4 was prepared using the pyrolysis method [30]."
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "tool": "search_text",
+          "args": {
+            "keyword": "solvothermal"
+          },
+          "result": {
+            "keyword": "solvothermal",
+            "n_hits": 6,
+            "sentences": [
+              "Amino modulation on the surface of graphitic carbon nitride for enhanced photocatalytic hydrogen production Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, Peng Chen a,**, Xingyou Tian b a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, Hefei, Anhui, 230031, People’s Republic of China c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China A R T I C L E I N F O Keywords: Photocatalytic hydrogen production Carbon nitride Urea Amino groups Solvothermal A B S T R A C T Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in catalytic reactions.",
+              "In this study, amino groups were incorporated into the structure of bulk carbon nitride by solvothermal treatment facilitated by an optimal content of urea.",
+              "In this study, amino functional groups modified g-C3N4 composites were prepared using a urea-induced solvothermal method.",
+              "Synthesis of amino-modified g-C3N4 The synthesis of amino-modified g-C3N4 was carried out using the solvothermal method.",
+              "The results from SEM and TEM revealed a subtle impact on the morphology of g- C3N4 after solvothermal treatment.",
+              "Following solvothermal treatment, CNU20 underwent a transformation into thin layers and acquired a loose structure (Fig."
+            ]
+          }
+        },
+        {
+          "step": 5,
+          "tool": "search_text",
+          "args": {
+            "keyword": "autoclave"
+          },
+          "result": {
+            "keyword": "autoclave",
+            "n_hits": 2,
+            "sentences": [
+              "Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and maintained at 433 K for 6 h.",
+              "After cooling naturally to room temperature, the pale yellow precipitate was collected from the autoclave and washed several times with ethanol and deionized water."
+            ]
+          }
+        },
+        {
+          "step": 6,
+          "tool": "search_text",
+          "args": {
+            "keyword": "N2"
+          },
+          "result": {
+            "keyword": "N2",
+            "n_hits": 6,
+            "sentences": [
+              "Before the photocatalytic reaction, high-purity N2 was passed for 20 min to remove the dissolved gas in system.",
+              "500 μL of the precipitated gas was taken during the photocatalytic reaction, and the content of hydrogen was measured by gas chromatography (Kexiao GC1690 gas chromatography equipped with a TDX01 column and a thermal conductive detector, and high-purity N2 as the carrier gas).",
+              "At the end of the reaction, the gas produced in the reactor was degassed using high-purity N2.",
+              "g-C3N4 was deconvolved into two peaks, whereas CUN20 was deconvolved into three peaks.",
+              "Specifically, the PL intensity of CUN20 was considerably lower than that of g-C3N4, demonstrating that urea-treated g-C3N4 suppressed the recombination tendency of photoinduced carriers and enhanced electron transfer efficiency.",
+              "The apparent quantum efficiency of the Pt-CUN20 composite was measured, as shown in Fig."
+            ]
+          }
+        },
+        {
+          "step": 7,
+          "tool": "search_text",
+          "args": {
+            "keyword": "argon"
+          },
+          "result": {
+            "keyword": "argon",
+            "n_hits": 0,
+            "sentences": []
+          }
+        },
+        {
+          "step": 8,
+          "tool": "search_text",
+          "args": {
+            "keyword": "vacuum"
+          },
+          "result": {
+            "keyword": "vacuum",
+            "n_hits": 1,
+            "sentences": [
+              "The samples were washed with distilled water and ethanol several times, and then dried under vacuum at 333 K to obtain the samples denoted as Pt–CN and Pt–CNU-x."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

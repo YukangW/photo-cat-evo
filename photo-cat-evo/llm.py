@@ -36,7 +36,7 @@ def chat(messages: list, tools: list | None = None, retries: int = 4):
             if e.status_code not in _RETRY_STATUS:
                 hint = _HINTS.get(e.status_code, "")
                 raise RuntimeError(f"LLM request failed with HTTP {e.status_code}: {e.message} {hint}") from e
-            err = f"HTTP {e.status_code}"
+            err = f"HTTP {e.status_code}: {str(e.message)[:300]}"
         except APIConnectionError as e:
             err = e.__class__.__name__
         wait = 5 * 2 ** attempt          # 5, 10, 20, 40 s

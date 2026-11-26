@@ -1,0 +1,593 @@
+Carbon 219 (2024) 118841
+
+Available online 17 January 2024
+0008-6223/© 2024 Elsevier Ltd. All rights reserved.
+
+Amino modulation on the surface of graphitic carbon nitride for enhanced 
+photocatalytic hydrogen production 
+
+Heng Yang a, Awang Zhang a, Jianjun Ding b,c,*, Rui Hu b, Yi Gong b, Xiangyang Li b, Lin Chen b,c, 
+Peng Chen a,**, Xingyou Tian b 
+
+a School of Chemistry and Chemical Engineering, Anhui University, Hefei, 230601, People’s Republic of China 
+b Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, Chinese Academy of Sciences, 
+Hefei, Anhui, 230031, People’s Republic of China 
+c Anhui Institute of Innovation for Industrial Technology, Hefei, Anhui, 230088, People’s Republic of China 
+
+A R T I C L E I N F O 
+
+Keywords: 
+Photocatalytic hydrogen production 
+Carbon nitride 
+Urea 
+Amino groups 
+Solvothermal 
+
+A B S T R A C T 
+
+Bulk graphitic carbon nitride suffers from the disadvantages of a small specific surface area, high recombination 
+of photogenerated charge carriers, and low surface catalytic activity, which greatly limits its application in 
+catalytic reactions. In this study, amino groups were incorporated into the structure of bulk carbon nitride by 
+solvothermal treatment facilitated by an optimal content of urea. The experimental data suggested that the 
+introduced amino groups modified the morphology and structure of bulk carbon nitride, and improved the 
+charge separation. More importantly, the enriched amino groups promoted the formation of nitrogen-rich carbon 
+nitride, which was conducive to the deposition and reduction of ultrafine Pt nanoparticles. The resulting Pt/g- 
+C3N4 composite exhibited excellent visible-light-driven activity for hydrogen evolution. A high rate of 410.51 
+μmol h−1 with an apparent quantum efficiency of 17 % was achieved, which is 85.5 times higher than that of 
+bulk carbon nitride. The effective approach developed in this work could provide new insights into the design of 
+bulk carbon nitride with enhanced performance. 
+
+1. Introduction 
+
+Over the past decades, the demand for energy and environmental 
+concerns have significantly escalated due to the consumption of fossil 
+fuels. The development of clean and environmentally friendly energy 
+sources is necessary and urgent [1–4]. Semiconductor photocatalysis has 
+garnered considerable interest because of its potential to decompose 
+water for hydrogen production, convert carbon dioxide into organic 
+fuels, degrade organic pollutants, and catalyze organic synthesis [5–9]. 
+A carbon-based photocatalyst that has received extensive research 
+attention is graphitic carbon nitride (g-C3N4). This is due to its narrow 
+bandgap width, appropriate valence band and conducting band positions, two-dimensional layered structure, and robust stability [10–13]. 
+However, bulk carbon nitride presents certain drawbacks, including 
+high charge-carrier recombination and limited surface active sites, 
+which severely restrict its catalytic activity. 
+
+To date, numerous improvement strategies have been proposed to 
+
+resolve the challenges of bulk graphitic carbon nitride (g-C3N4), such as 
+nanostructure design, heteroatom doping, semiconductor amalgamation, and noble metal deposition [14–17]. Research shows that introducing surface functional groups is one of the extensively studied 
+methods to enhance catalytic performance. Owing to their excellent 
+electron-withdrawing abilities, surface functional groups (-OH, –C––O, 
+–COOH, –NH2, etc.) are employed to regulate the electronic structure 
+and photocatalytic properties of g-C3N4 [18–22]. Among them, surface 
+amino group modification of the material for better photocatalytic activity has attracted much attention. Yan et al. reported an 
+amino-functionalized ultrathin g-C3N4 with strong redox capability and 
+accelerated photocatalytic reaction kinetics. Under the deposition of 3 
+wt% Pt cocatalyst, the obtained photocatalyst exhibited an apparent 
+quantum efficiency (AQE) of 13.4 % at 420 nm [23]. Huang et al. 
+developed a precursor modification strategy to prepare an amino-rich 
+thin-pore g-C3N4 with significantly improved performance in the photocatalytic degradation of RhB and hydrogen production (with the 
+
+* Corresponding author. Key Laboratory of Photovoltaic and Energy Conservation Materials, Institute of Solid State Physics, Hefei Institutes of Physical Science, 
+Chinese Academy of Sciences, Hefei, Anhui 230031, People’s Republic of China. 
+
+** Corresponding author. 
+E-mail addresses: dingjj@rntek.cas.cn (J. Ding), chenpeng@ahu.edu.cn (P. Chen). 
+
+Contents lists available at ScienceDirect 
+
+Carbon 
+
+journal homepage: www.elsevier.com/locate/carbon 
+
+https://doi.org/10.1016/j.carbon.2024.118841 
+Received 13 November 2023; Received in revised form 4 January 2024; Accepted 16 January 2024 
+Carbon 219 (2024) 118841
+
+2
+
+deposition of 3 wt% Pt cocatalyst) [24]. Zhao et al. reported an oxalic 
+acid-induced supramolecular assembly strategy that successfully introduced amino groups into g-C3N4 nanosheets. A hydrogen production 
+rate of 130.7 μmol h−1 with an AQE of 5.58 % at 420 nm was achieved 
+by deposition of 1 wt% Pt cocatalyst [25]. These studies have shown that 
+the increased photocatalytic activity of g-C3N4 is mainly attributed to 
+the surface amino groups. It has been noted that the amino groups 
+functioned as hole stabilizers, and the introduction of amino groups into 
+g-C3N4 is beneficial for prolonging the lifetime of the excited state in the 
+photocatalytic reaction [26–29]. 
+
+Although the synthesis and some applications of g-C3N4 with surface 
+functional groups have already been reported, the enhancement of 
+photocatalytic hydrogen production activity directly by amino groups 
+has been limited. In this case, it’s necessary to deposit active centers 
+(such as Pt) to achieve efficient photocatalytic hydrogen production 
+performance. However, to the best of our knowledge, there has been 
+almost no study on the effect of surface amino groups on the morphology 
+and structure of the deposited active centers. In this study, amino 
+functional groups modified g-C3N4 composites were prepared using a 
+urea-induced solvothermal method. The structure and photoelectric 
+properties of amino-modified samples were characterized by XRD, 
+Raman, FT-IR, XPS, absorption, SEM, TEM, and EIS. The results indicated that the introduction of amino functional groups can not only 
+modulate the morphology and structure of g-C3N4, but also improve the 
+charge separation. Moreover, the enriched amino groups promoted the 
+formation of nitrogen-rich carbon nitride, which facilitated the binding 
+or intercalation of exotic Pt atoms into the matrix of g-C3N4 as a high- 
+efficiency photocatalytic hydrogen production system. As a result, the 
+photocatalytic hydrogen production activity of the obtained Pt/g-C3N4 
+experienced a boost under visible light irradiation. 
+
+2. Experiments 
+
+2.1. Preparation of bulk g-C3N4 
+
+All reagents were purchased from Aladdin Biochemical Technology 
+Co. and Sinopharm Chemical Reagent Co. without further purification. 
+Bulk g-C3N4 was prepared using the pyrolysis method [30]. Specifically, 
+10 g of melamine was added to an alumina crucible with a lid, heated to 
+823 K at an elevated rate of 5 K/min, and kept at this temperature for 2 h 
+in air. After cooling to room temperature, the obtained yellow agglomerates were ground into powder for further structural characterization and photocatalytic experiments. The yield of g-C3N4 was 
+calculated to be 50 %. 
+
+2.2. Synthesis of amino-modified g-C3N4 
+
+The synthesis of amino-modified g-C3N4 was carried out using the 
+solvothermal method. In detail, 50 mg of g-C3N4 was dispersed into 30 
+mL of ethylene glycol (EG) and ultrasonicated for 20 min. A certain 
+content of urea was then added to the above suspension and ultrasonicated for another 20 min. Subsequently, the suspension was transferred to a 100 mL stainless steel autoclave lined with PTFE and 
+maintained at 433 K for 6 h. After cooling naturally to room temperature, the pale yellow precipitate was collected from the autoclave and 
+washed several times with ethanol and deionized water. Finally, the 
+product was dried at 333 K overnight and ground to a fine powder. The 
+yield of amino-modified g-C3N4 was calculated to be 95 %. The obtained 
+samples were labeled CNU-x, where x (x = 5, 10, 20, 30, and 50 mg) 
+represents the content of urea added. 
+
+2.3. Synthesis of the Pt/g-C3N4 composite 
+
+100 mg of g-C3N4 or CNU-x was dispersed in 30 mL of distilled water, 
+and a certain content of H2PtCl6⋅6H2O was added during stirring. The 
+mixture was stirred for 5 h in a water bath at 343 K. The samples were 
+
+washed with distilled water and ethanol several times, and then dried 
+under vacuum at 333 K to obtain the samples denoted as Pt–CN and 
+Pt–CNU-x. Without special instructions, the content of Pt was set at 0.5 
+wt%. 
+
+2.4. Characterization 
+
+The Fourier-transform Infrared (FT-IR) spectra were obtained using a 
+PerkinElmer Spectrum Two Spectrometer. The crystal structure was 
+investigated by powder X-ray diffraction (XRD) in the 5–80◦range using 
+a Rigaku Smartlab 9 kW X-ray diffractometer equipped with a Cu Kα 
+radiation source. The electronic structure of the samples was recorded 
+using an ESCALAB 250Xi X-ray photoelectron spectroscope (XPS). The 
+surface structure of the samples was evaluated using a field emission 
+scanning electron microscope (SEM, Sirion 200) and a field emission 
+transmission electron microscope (JEM-2100F). Raman spectra were 
+probed at room temperature using a LabRamHR Evolution spectrometer 
+and near-infrared (1064 nm) excitation spectroscopy. The contents of Pt 
+were measured using an Optima 7300 DV inductively coupled plasma 
+atomic emission spectroscopy (ICP-AES) analyzer. The photocurrent 
+responses and electrochemical impedance spectroscopy (EIS) analyses 
+were performed using a CHI-760D electrochemical analyzer. The 
+UV–visible diffuse reflectance spectra were recorded using the UV3600- 
+MPC3100. The photoluminescent (PL) spectra of the samples were 
+analyzed using a fluorescence spectrophotometer (JY Fluorolog-3-Tou). 
+Elemental analyses were performed on an elemental analyzer (Vario EL- 
+3) for rapid quantitative analysis of elemental content. Contact angle 
+test (CA100D, Shanghai Innuo-instruments Co. LTD) was applied to test 
+the hydrolysis stability. A fully automated specific surface area and pore 
+space analyser (Tristar II 3020 M) was used to record the BET 
+measurements. 
+
+2.5. Evaluation of photocatalytic hydrogen production 
+
+Photocatalytic experiments were performed in a gas-sealed recirculation system with external cooling water under visible light irradiation. 
+A 300 W xenon lamp (PLS-SXE300D, Beijing PerfectLight Technology 
+Co., Ltd.) with a 420 nm cut-off filter was used as the visible light source. 
+In a typical photocatalytic hydrogen production experiment, 10 mg of 
+photocatalyst powder was dispersed into 100 mL of aqueous solution 
+containing 10 vol% triethanolamine (TEOA) as a sacrificial reagent to 
+form a homogeneous suspension. Before the photocatalytic reaction, 
+high-purity N2 was passed for 20 min to remove the dissolved gas in 
+system. 500 μL of the precipitated gas was taken during the photocatalytic reaction, and the content of hydrogen was measured by gas 
+chromatography (Kexiao GC1690 gas chromatography equipped with a 
+TDX01 column and a thermal conductive detector, and high-purity N2 as 
+the carrier gas). Each test was replicated three times, and the mean 
+values were calculated. At the end of the reaction, the gas produced in 
+the reactor was degassed using high-purity N2. The photocatalytic stability was evaluated using several cycle experiments. 
+
+AQE was measured using the above Xenon lamp with band-pass filters (Beijing PerfectLight). The number of incident photons was detected 
+using a FZ-A spectroradiometer (Beijing PerfectLight). The AQE was 
+estimated using the following equation (1) [31]: 
+
+AQE = 2 × the number of evolved hydrogen molecules
+
+the number of incident photons
+× 100%
+(1) 
+
+3. Results and discussion 
+
+3.1. Structural characterization 
+
+Fig. 1(a) shows the XRD spectra of g-C3N4 and urea-treated g-C3N4. 
+For bulk g-C3N4, there were two distinct diffraction peaks at 12.8◦and 
+27.6◦in the XRD spectrum, which correspond to the (100) and (002) 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+3
+
+crystal planes. The first peak indicates the characteristic triazine structure with in-plane stacking, whereas the second peak results from the 
+interlayer stacking of aromatic structures [32,33]. The diffraction peaks 
+indicate that the product was g-C3N4. There were no significant differences in the position of the XRD peaks between g-C3N4 and urea-treated 
+g-C3N4. This implies that the characteristic structure of the carbon 
+nitride remained intact and was not destroyed by the urea molecules. 
+The intensity of the interlayer stacking (002) peak of CNU20 decreased, 
+which may be due to the decrease in the content of carbon nitride 
+lamellae after the solvent heat treatment of urea. Raman spectra of 
+g-C3N4 and urea-treated g-C3N4 were measured using near-infrared 
+(1064 nm) excitation to characterize the structures of both materials. 
+As shown in Fig. 1(b), the N-symmetric stretching in the s-triazine ring 
+structure was the underlying characteristic peak at 709 cm−1, while the 
+“melon" structure of g-C3N4 yielded the peak at 1234 cm−1 [34,35]. The 
+Raman spectra of urea-treated g-C3N4 remained consistent with those of 
+g-C3N4. The findings from the XRD and Raman analyses verified that the 
+crystal architecture of g-C3N4 remained unaltered by the urea treatment. 
+
+Fig. 2(a) displays the FT-IR spectra of g-C3N4 and urea-treated g- 
+C3N4. The C–N or C––N stretching vibrations were likely the cause of the 
+peaks between 1200 and 1650 cm−1 in the g-C3N4. The peak observed at 
+810 cm−1 can be ascribed to the tri-s-triazine unit of g-C3N4. The broad 
+peaks in the range of 3000–3500 cm−1 are attributed to the stretching of 
+N–H bonds [36,37]. From these results, the CNU peaks ranging from 500 
+to 2000 cm−1 demonstrate consistency with g-C3N4. Further observation 
+of the N–H stretching bands showed (Fig. 2(b)) that the N–H band 
+transmittance of CN, CNU10, CNU20, and CNU50 was 78.8, 76.8, 74.4, 
+and 72.1 %, respectively. The N–H content of the CNU samples increased 
+with higher urea content. This suggests that amino groups were introduced on the surface of carbon nitride by urea treatment. 
+
+The chemical compositions and electronic structures of g-C3N4 and 
+CNU20 were analyzed using XPS, as shown in Fig. 3. The high-resolution 
+C1s spectra of the samples were presented in Fig. 3(a) and (b), respectively. g-C3N4 was deconvolved into two peaks, whereas CUN20 was 
+
+deconvolved into three peaks. Where standard carbon exhibited a peak 
+value of 284.8 eV, corresponding to a graphitic carbon atom, the characteristic peak at 288.3 eV was the result of sp2 hybridized carbon [38, 
+39]. In contrast, CNU20 displays a new peak at 286.1 eV, which was 
+attributed to the carbon atoms in C–NH, increased to 5.45 % (Table S1) 
+[40,41]. The emergence of the new peak implies that amino groups were 
+present on the synthesized CNU20 surface. The enhancement of the C–C 
+peak at 284.8 eV (from 8.77 % to 11.96 % of the content) corresponds to 
+the unavoidable loading of the graphitic carbon atoms, demonstrating 
+that the surface structure of g-C3N4 was affected by the urea treatment 
+[42]. The N1s spectrum can be separated into four peaks, as shown in 
+Fig. 3(c) and (d). The peak at 398.7 eV was related to a two-coordinated 
+nitrogen atom in the sp2 hybridized nitrogen, whereas the peak at 399.8 
+eV was associated with a three-coordinated nitrogen atom in the sp3 
+
+hybridized nitrogen. The minor peak identified at 401.2 eV was likely 
+due to amino functional groups (N–H). The peak at 404.6 eV binding 
+energy was attributed to the localization of the positive charge of the 
+heptazine ring [43,44]. Compared to g-C3N4, the peaks observed in the 
+N1s spectrum of CNU20 were shifted toward a higher binding energy, 
+indicating a potential rise in the nitrogen content of the sample. This 
+suggests a possible enhanced close interaction between the nitrogen 
+atoms and the surrounding carbon atoms. Importantly, the peak at 
+401.4 eV (N–H) was enhanced after urea-treated. The N–H contents for 
+the g-C3N4 and CNU20 samples were calculated to be 8.27 % and 10.40 
+%, respectively (Table S1). The samples underwent contact angle 
+testing, and the results are presented in Fig. S1. The gradual reduction in 
+the contact angle suggested an increase in the quantity of amino groups. 
+This evidence suggested that the introduction of amino groups can increase sample hydrophilicity [27,45]. Meanwhile, we performed 
+elemental analysis tests on g-C3N4 and CNU20 (Table S2). The results 
+showed that the N/C mass ratio of the treated samples was 1.77, which 
+was higher than that of g-C3N4 (1.57) obtained directly from melamine 
+without pre-treatment. The results confirmed the successful introduction of the amino groups. 
+
+Fig. 1. (a) XRD patterns and (b) Raman spectra of CN, CNU5, CNU10, CNU20, CNU30, and CNU50. 
+
+Fig. 2. (a) FT-IR spectra and (b) FT-IR spectra enlarged magnification at 3600–2000 cm−1 of CN, CNU5, CNU10, CNU20, CNU30, and CNU50. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+4
+
+Surface morphology and structural characteristics of g-C3N4 and 
+CNU20 were explored through SEM, TEM, and BET analyses. The results 
+from SEM and TEM revealed a subtle impact on the morphology of g- 
+C3N4 after solvothermal treatment. The bulk g-C3N4, synthesized using 
+melamine, exhibited extensive stacking, attributed to the agglomeration 
+of the tri-s-triazine structure (Fig. 4(a, c)), forming an irregular two- 
+dimensional layered structure. Following solvothermal treatment, 
+CNU20 underwent a transformation into thin layers and acquired a loose 
+structure (Fig. 4(b, d)). These findings aligned with the observed 
+decrease in the intensity of interlayer stacking peaks in XRD, highlighting the influence of high-temperature conditions on the g-C3N4 
+reaction. Nitrogen adsorption-desorption analysis results (Table S3) 
+
+indicated that CNU20 exhibited slightly larger specific surface area, pore 
+volume, and pore size in specific regions compared to g-C3N4. This 
+observation correlated with the subtle variations in morphology before 
+and after urea modification. Consequently, the enhanced photocatalytic 
+activity observed in the subsequent hydrogen production reaction was 
+also congruent with the alterations in morphology. 
+
+UV–vis diffuse reflectance spectroscopy was used to examine the 
+light absorption properties of all samples. Fig. 5(a) shows the UV–vis 
+absorption spectra of all treated samples, which closely resemble the 
+absorption spectra of g-C3N4. As can be seen from the enlarged magnification of Fig. S2, the data suggested that the light absorption of the 
+samples increased after treatment with urea, likely resulting from the 
+
+Fig. 3. High-resolution C1s spectra (a and b) and high-resolution N1s spectra (c and d) of CN and CNU20. 
+
+Fig. 4. SEM images (a and b) and TEM images (c and d) of CN and CNU20. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+5
+
+increase in the amino content of the CNU samples. XPS VB spectra and 
+Kubelka-Munk functions were used to study the energy band structures 
+of g-C3N4 and CNU20 [46,47]. In Fig. 5(b), the VB value of CNU20 was 
+1.32 eV, which is positive compared with that of g-C3N4 (1.22 eV). Based 
+on the relationship between the KM function and the excitation wavelength energy of the UV–visible spectrum, the band gap of the g-C3N4 
+and CNU20 samples was calculated to be 2.41 and 2.33 eV, respectively 
+(Fig. inset of 5(a)). The narrowing of the CNU20 bandgap may be due to 
+the presence of amino groups decreasing the conduction band. The 
+reduced bandgap enables g-C3N4 to absorb more visible light, broadening the light absorption range of the material. This is advantageous for 
+photocatalytic reactions utilizing visible light. Based on the aforementioned outcomes, Fig. 5(c) presents the energy band arrangement. 
+
+The recombination efficiency of the photoinduced carriers was 
+investigated for all samples using steady-state PL spectroscopy. In PL 
+spectra, a lower peak intensity indicates a lower compounding rate of 
+photoexcited electron-hole pairs, resulting in higher photocatalytic activity [48]. A prominent photoluminescent emission peak was observed 
+for g-C3N4, as shown in Fig. 5(d). The peak was attributed to radiative 
+recombination of the carriers. The modified samples containing urea 
+
+exhibited a decreasing trend. Specifically, the PL intensity of CUN20 was 
+considerably lower than that of g-C3N4, demonstrating that urea-treated 
+g-C3N4 suppressed the recombination tendency of photoinduced carriers 
+and enhanced electron transfer efficiency. Thus, the urea-treated g-C3N4 
+effectively enhanced the efficiency of charge separation between 
+photoinduced electrons and holes, while also accelerating carrier 
+migration. 
+
+Photoelectrochemical characterization was conducted to further 
+evaluate the migration and separation of charge carriers in the photocatalytic reaction [49]. Fig. 5(e) displays the electrochemical impedance 
+spectroscopy (EIS) Nyquist plots of g-C3N4 and CNU20 electrodes. The 
+radius of the arc is primarily linked to the charge transfer efficiency at 
+the interface of the photocatalyst. A smaller arc radius results in a higher 
+efficiency of charge transfer [30]. The arc radius of CNU20 was smaller 
+than that of g-C3N4, indicating a higher transport rate of photoexcited 
+carriers in CNU20. This was also demonstrated by the transient photocurrent response [50]. Fig. 5(f) demonstrates that all working electrodes 
+responded quickly and consistently during 6 on/off cycles of irradiation. 
+CNU20 generated a photocurrent of 20.31 μA cm−2 under visible light 
+irradiation, which was 1.88 times higher than that of g-C3N4 (10.81 μA 
+
+Fig. 5. Absorption (a) spectra of CN, CNU5, CNU10, CNU20, CNU30, and CNU50; the VB spectra (b) and the energy band structure (c) of CN and CNU20; photoluminescence (d) spectra of CN, CNU5, CNU10, CNU20, CNU30, and CNU50; EIS spectra (e) and transient photocurrent density responses (f) of CN and CNU20. 
+Inset of (a): the band gap of CN and CNU20 derived by the Kubelka–Munk function. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+6
+
+cm−2). Therefore, we believe that the higher transport efficiency of 
+photoexcited carriers contributes to the increased rate of hydrogen 
+production in CNU20. 
+
+3.2. Photocatalytic H2 production performance 
+
+The performance of g-C3N4 and urea-treated g-C3N4 in photocatalytic hydrogen production was examined, as shown in Fig. 6(a). The 
+rate of photocatalytic hydrogen production was remarkably low for g- 
+C3N4 at only 4.80 μmol h−1. When amino groups were introduced on its 
+surface alone, the hydrogen production rate roughly showed an 
+increasing trend, but not a significant increase and the hydrogen production rate of CNU50 was only slightly increased to 6.28 μmol h−1. It 
+was shown that the nitrogen-enrich brought about by the amino group is 
+positively optimized for the hydrogen production rate of the carbon 
+nitride. Although the introduced amino group changes the morphology 
+and structure of the bulk carbon nitride and improves the charge separation, the effect on the hydrogen production performance is very 
+limited. To the best of our knowledge, there is little research pointing to 
+a single amino group that significantly improves the hydrogen production performance of carbon nitride, and most researchers have chosen to 
+explore hydrogen production performance with the involvement of a co- 
+catalyst. 
+
+Therefore, we also chose to introduce the co-catalyst Pt as the active 
+site for hydrogen production, and the hydrogen production performance 
+is shown in Fig. 6(b) and (c). When the Pt nanoparticles were deposited, 
+the hydrogen production rate was greatly increased compared with that 
+of pristine g-C3N4. Due to the deposition of Pt co-catalysts, photogenerated electrons were transferred to the surface of Pt nanoparticles, 
+which further promoted the separation of photogenerated electrons and 
+holes and effectively inhibited the recombination of photogenerated 
+carriers. From the results, it can be seen that the deposition of Pt 
+nanoparticles can effectively improve the photocatalytic performance of 
+urea-treated carbon nitride. In addition, the hydrogen production rate 
+escalates within a specific range as the urea content increases. The 
+hydrogen production activity over the Pt–CNU20 composite may be 
+
+influenced by the Pt content, as shown in Fig. 6(d). When the Pt content 
+was 0.5 wt% and the urea content was 20 mg, Pt–CNU20 exhibited the 
+highest photocatalytic hydrogen production performance, with a rate of 
+410.51 μmol h−1, which was 5.5 times greater than that of Pt–CN (74.03 
+μmol h−1) and 85.5 times greater than that of g-C3N4 (4.8 μmol h−1). 
+
+The apparent quantum efficiency of the Pt-CUN20 composite was 
+measured, as shown in Fig. 7(a). The hydrogen production rate trend 
+coincided with the absorption spectrum trend, which decreased as the 
+irradiation wavelength increased. The hydrogen production rates were 
+211.99, 154.78, 84.12, 40.38, and 12.79 μmol h−1 at 435, 450, 475, 500, 
+and 520 nm, respectively. Based on equation (1), the corresponding AQE 
+values were 17.0 %, 10.5 %, 3.72 %, 1.68 %, and 0.49 % at 435, 450, 
+475, 500, and 520 nm, respectively. The hydrogen production activity of 
+Pt–CNU20 was compared with typical Pt/g-C3N4 composite photocatalysts prepared by different methods, and the result in Table S4 
+demonstrates significant advantages of our work. When the irradiation 
+wavelength reached 550 nm, there was no detectable hydrogen, indicating that the photocatalytic response of the Pt–CNU20 composite in 
+visible light resulted from the bandgap transition between the conduction and valence bands. We assessed the endurance of the Pt–CNU20 
+composite under visible light exposure for 36 h, as shown in Fig. 7(b). 
+The photocatalytic activity remained steady after 6 consecutive rounds 
+photocatalytic hydrogen production tests. The structures of the Pt–CNU 
+composites after 6 rounds of reaction were characterized by XRD, XPS 
+and SEM (Fig. S3). The results showed that the crystal structure, 
+morphology and valence state of Pt remained unchanged in the 
+Pt–CNU20 composites after the reaction, indicating the stability of the 
+Pt–CNU20 composite under the examined conditions. 
+
+3.3. Function of platinum 
+
+Based on the aforementioned analysis, it is evident that the surface 
+modification of g-C3N4 with urea can introduce amino groups. However, 
+the enhancement of the photocatalytic hydrogen production performance by amino groups directly is very limited. Therefore, we chose to 
+introduce the precious metal co-catalyst Pt into this material. The 
+
+Fig. 6. (a) The content of H2 versus time and (b) the content of H2 versus time in the presence of Pt and (c) the average H2 evolution rate of all photocatalysts and (d) 
+the effects of Pt contents on the photocatalytic performance. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+7
+
+photocatalytic hydrogen production performance of the urea modification was substantially improved by the introduction of Pt. From this, we 
+hypothesized that the deposition and reduction of ultrafine Pt nanoparticles were affected by the presence of amino groups. So, we explored 
+the electronic structure changes of the material after the introduction of 
+Pt. 
+
+Fig. S4(a) shows the XRD spectra of Pt–CN and Pt–CNU20 composites. The position of the peaks has not changed compared to the bulk g- 
+C3N4. The intensity of the (002) peak for interlayer stacking in 
+Pt–CNU20 composite was lower than that of Pt–CN, which was in line 
+with the findings for CNU20. This reduction was due to the decrease in 
+the g-C3N4 lamellar structure content caused by the heat treatment of 
+the urea solvent. Furthermore, the characteristic diffraction peak of Pt 
+was not found in Fig. S4(a). This may be due to the low content of Pt, 
+making it difficult to observed. Alternatively, it could be due to the 
+overlap of the main diffraction peak of Pt with that of g-C3N4. The 
+structures of Pt–CN and Pt–CNU20 composites were characterized by 
+measuring their Raman spectra under near-infrared (1064 nm) excitation, as shown in Fig. S4(b). The Raman spectra of Pt after deposition are 
+generally consistent with those of g-C3N4, indicating that low content of 
+Pt was indeed difficult to detect by XRD and Raman. 
+
+The XPS spectra of Pt 4f in the Pt–CN and Pt–CNU20 composites are 
+shown in Fig. 8 and Table S5. For the Pt–CN composite, six peaks can be 
+fitted to the Pt 4f spectrum. The peaks with binding energies of 72.2 and 
+74.9 eV were attributed to metallic Pt0 (19.38 %), those with binding 
+energies of 72.8 and 76.0 eV were attributed to the oxidation state of 
+Pt2+ (57.39 %), and those with binding energies of 74.2 and 78.2 eV 
+were attributed to the oxidation state of Pt4+ (23.23 %) [51,52]. Significant changes in the properties of Pt due to surface charge redistribution occurred when g-C3N4 was modified with urea. A substantial 
+increase in the percentage of metallic Pt0 (37.26 %) was observed. At the 
+
+same time, the peaks corresponding to the different valence states of Pt 
+were red-shifted, moving to a higher binding energy. This was consistent 
+with the red-shifted of the peaks in the N1s spectrum, as shown in Fig. 8 
+(b). It is demonstrated that the presence of amino groups enhances Pt–N 
+coordination. The enhanced Pt–N coordination bond facilitates photogenerated charge migration from g-C3N4 to Pt. 
+
+According to the ICP-AES measurements (Table S5), the Pt–CN 
+composite had an actual Pt content of 0.15 wt%, which was significantly 
+lower than the target content of 0.5 wt%. The loading of Pt in the 
+Pt–CNU20 composite material was 0.33 wt%, which was twice as high as 
+that in the Pt–CN composite. Thus, the introduction of amino groups can 
+improve the reduction efficiency, which can reduce most of the Pt4+ in 
+H2PtCl6 to Pt0. The metallic Pt0 deposited onto the g-C3N4 surface enhances the photocatalytic hydrogen production performance. This is 
+because metallic Pt0 can provide more photocatalytic active sites, which 
+enhances the efficiency of the reduction reaction of water molecules to 
+produce hydrogen. The presence of Ptδ+ does not diminish the active site 
+for producing photocatalytic hydrogen, and it can act as the active 
+center for holes, aiding in the separation of photogenerated carriers. 
+Meanwhile, oxidized Pt2+ performs a critical function in inhibiting unwanted hydrogen back-oxidation [53–55]. Therefore, it can be demonstrated that the Pt–CNU20 photocatalyst with a larger proportion of 
+metallic Pt0 is more effective in hydrogen production than Pt–CN. 
+
+Fig. 9 shows the TEM images of Pt–CN and Pt–CNU20 composites. 
+The image shows that Pt nanoparticles with an average size of 1–2 nm 
+are uniformly distributed on the surface of CN. In the STEM image of the 
+Pt–CNU20 composite (Fig. S5), multiple bright spots were observed on 
+the surface, which were identified as Pt nanoparticles. Both the inset of 
+Fig. 9(a) and (b) show that the interplanar spacing of the nanoparticle 
+was approximately 0.26 nm, indicating alignment with the (111) plane 
+of Pt [34,56]. The Pt nanoparticles within the Pt–CN and Pt–CNU20 
+
+Fig. 7. (a) Photocatalytic hydrogen production rate of the Pt–CNU20 composite under visible light irradiation at different wavelengths and (b) the stability test of 
+Pt–CNU20 composite. 
+
+Fig. 8. High-resolution N1s spectra (a) and high-resolution Pt 4f spectra (b) of Pt–CN and Pt–CNU20. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+8
+
+composites were tallied (Fig. S6), revealing a decrease in the size of the 
+particles that were deposited on their surfaces. The following water 
+reduction, the average size of the Pt nanoparticles on the g-C3N4 surface 
+was approximately 1.72 nm. On the other hand, for urea-treated g-C3N4, 
+the average size of the Pt nanoparticles was reduced to 1.16 nm. The 
+reduction in the Pt nanoparticle size enhances the metal-carrier interaction [57]. This, in turn, amplifies Pt utilization in the photocatalytic 
+reaction. 
+
+3.4. Mechanism of photocatalysis 
+
+To identify the factors behind the significant improvement in the 
+photocatalytic hydrogen production performance of Pt–CNU composites, the possible mechanisms are presented in Fig. 10. The presence of 
+amino groups facilitates the improvement of the charge separation of g- 
+C3N4 and contributes to the prolongation of the lifetime of the excited 
+state in the photocatalytic reaction. The amino-rich functional groups 
+facilitate the binding of Pt atoms, and enhance Pt–N coordination. 
+Moreover, the introduction of amino groups enables the reduction of 
+Pt4+ and further hinders the growth of Pt nanoparticles, because of the 
+improved Pt–N coordination. Visible light irradiation prompts g-C3N4 to 
+generate photogenerated electrons (e−) and holes (h+) at CB and VB, 
+correspondingly. The electrons produced at CB are quickly conveyed to 
+the surface of the metallic Pt0 to achieve effective electron-hole separation. Subsequently, the H+ in the water molecule can receive electrons 
+from the metallic Pt0 to create hydrogen. Meanwhile, the TEOA sacrificial agent utilizes the holes moved to Ptδ+ in the VB through an 
+oxidation reaction. 
+
+4. Conclusions 
+
+In summary, the structure of bulk carbon nitride was altered by the 
+amino groups introduced through urea treatment. The increase in hydrophilicity facilitated the adsorption of H+. The enriched amino groups 
+also contributed to the deposition and reduction of ultrafine Pt nanoparticles, effectively preventing their agglomeration or deactivation. 
+Furthermore, the presence of amino groups improved the reduction of 
+Pt4+ and increased the amount of deposited Pt. The findings demonstrate that Pt–CNU20 composites exhibit exceptional photocatalytic 
+activity for hydrogen production, surpassing the performance of previously reported g–C3N4–based catalysts. The enhanced visible light 
+trapping ability, effective separation of photogenerated charge carriers, 
+and deposition of ultrafine Pt nanoparticles are the reasons for the superior photocatalytic performance. The effective approach developed in 
+this work could provide new insights into the design of bulk carbon 
+nitride with enhanced performance. 
+
+CRediT authorship contribution statement 
+
+Heng Yang: Data curation, Formal analysis, Investigation, Methodology, Writing – original draft. Awang Zhang: Data curation, Investigation. Jianjun Ding: Conceptualization, Funding acquisition, 
+Methodology, Supervision, Writing – review & editing. Rui Hu: Methodology. Yi Gong: Methodology. Xiangyang Li: Methodology. Lin 
+Chen: Methodology. Peng Chen: Conceptualization, Funding acquisition, Supervision, Writing – review & editing. Xingyou Tian: Funding 
+acquisition, Project administration, Resources. 
+
+Fig. 9. TEM images of Pt–CN (a) and Pt–CNU20 composites (b). (The inset is HRTEM image of the corresponding sample). 
+
+Fig. 10. Schematic diagram illustrating the proposed photocatalytic hydrogen production mechanism. 
+
+H. Yang et al. 
+Carbon 219 (2024) 118841
+
+9
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial 
+interests or personal relationships that could have appeared to influence 
+the work reported in this paper. 
+
+Acknowledgments 
+
+This work was financially supported by Key Research and Development Project of Anhui Province (2022l07020009), Anhui Science and 
+Technology Major Project (202103a05020014, 202203a05020003), the 
+Youth Innovation Promotion Association, Chinese Academy of Sciences 
+(CAS) (2020446), the CASHIPS Director’s Fund (YZJJZX202015, 
+YZJJ202102), and National Natural Science Foundation of China 
+(22175183). 
+
+Appendix A. Supplementary data 
+
+Supplementary data to this article can be found online at https://doi. 
+org/10.1016/j.carbon.2024.118841.

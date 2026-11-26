@@ -28,7 +28,7 @@ def test_shipped_dictionary_is_valid():
     assert {"band gap", "BET surface area", "H2 evolution rate"} <= params.keys()
     for name, entry in params.items():
         assert set(entry) <= set(parameters.FIELDS), name
-        if "plausible_range" in entry:
+        if entry.get("plausible_range"):
             lo, hi = entry["plausible_range"]
             assert lo <= hi, name
 
@@ -108,7 +108,7 @@ PAPER = ("The band gap of CN-550 is 7.5 eV. Its surface area was 45.3 m2/g. "
 
 def test_range_from_dictionary_rejects_implausible_value():
     t = PaperTools(PAPER, {"name": "band gap", "parameter": "band gap"}, PARAMS)
-    out = t.save_result(7.5, unit="eV", evidence="The band gap of CN-550 is 7.5 eV")
+    out = t.save_result(7.5, unit="eV", sample_name="CN-550", evidence="The band gap of CN-550 is 7.5 eV")
     assert out["saved"] is False and "outside the expected range" in out["problems"][0]
 
 
@@ -169,5 +169,5 @@ def test_item_not_in_dictionary_is_still_extracted_and_verified(monkeypatch):
 
 def test_item_not_in_dictionary_still_needs_real_evidence(monkeypatch):
     t = PaperTools("The lifetime of DCN is 8.21 ns.", {"name": "fluorescence lifetime", "parameter": ""}, PARAMS)
-    assert t.save_result(9.9, evidence="The lifetime of DCN is 8.21 ns")["saved"] is False
-    assert t.save_result(8.21, evidence="The lifetime of DCN is 8.21 ns")["saved"] is True
+    assert t.save_result(9.9, sample_name="DCN", evidence="The lifetime of DCN is 8.21 ns")["saved"] is False
+    assert t.save_result(8.21, sample_name="DCN", evidence="The lifetime of DCN is 8.21 ns")["saved"] is True

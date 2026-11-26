@@ -24,6 +24,7 @@ import argparse
 import csv
 import json
 import os
+import re
 
 from config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
                     USE_PROMPT_CACHE)
@@ -52,10 +53,17 @@ SYSTEM_PROMPT = """You are an expert in materials science and photocatalysis who
 You extract ONE data item at a time; the item is given in the user's message.
 
 Rules:
-1. Report the value for the MAIN sample: the optimised/best sample the paper focuses on
-   (e.g. the one with the best photocatalytic performance), unless the item's details name a sample.
-   If several samples have values, put the others in all_values.
-2. The evidence must be an EXACT quote copied from the paper that contains the value.
+1. Report the value for EVERY sample that was made and measured in THIS paper, each with its name
+   exactly as written in the paper (e.g. "CN-550", "bulk g-C3N4", "P25"). Pristine or reference
+   samples count if the authors measured them themselves.
+   - Put the MAIN sample (the optimised/best one the paper focuses on, unless the item's details name
+     a sample) in value / sample_name, and every other sample in other_samples.
+   - Use the same sample names as earlier items of this paper (they are listed in the user message).
+   - NEVER report values from other papers: statements in the introduction, values of other works
+     in comparison tables, or anything with a citation ([12], "et al.", "previously reported").
+     Quotes with citations are rejected automatically.
+2. Every value needs an EXACT quote copied from the paper that contains it. One quote can cover
+   several samples (a table row, or "the Eg of A and B is 2.70 and 2.75 eV, respectively").
 3. Report the value exactly as written in the quote. Do not guess, convert units or calculate.
 4. Specific value first, range as a fallback:
    - If the paper gives a specific value, put it in "value".
@@ -64,7 +72,7 @@ Rules:
    - If it gives both a value and a range, fill both.
 5. Errors: if an uncertainty is reported for this data (e.g. "2.72 ± 0.02 eV", error bars given as
    numbers, standard deviation), copy it into "error" as written (e.g. "± 0.02"). Otherwise leave it ''.
-6. If neither a value nor a range is reported in the text, save value = null and range = ''.
+6. If neither a value nor a range is reported for any sample, save value = null and range = ''.
    Values only shown in a figure (no number in the text) count as not reported.
 7. Use the tools: search_text to find candidate sentences (try synonyms, units and method names),
    check_evidence / check_plausible if unsure, and finish by calling save_result.
@@ -113,13 +121,46 @@ def _summary(target: dict, result: dict) -> str:
     if result.get("error"):
         shown = f"{shown} (error {result['error']})"
     sample = f" for sample {result['sample_name']}" if result.get("sample_name") else ""
-    return f"- {target['name']}: {shown} {result.get('unit', '')}{sample}".rstrip()
+    line = f"- {target['name']}: {shown} {result.get('unit', '')}{sample}".rstrip()
+    others = result.get("other_samples") or []
+    if others:
+        line += "; other samples: " + ", ".join(
+            f"{o['sample_name']} {o['value'] if o.get('value') is not None else o.get('range', '')}"
+            for o in others)
+    return line
+
+
+def _sample_names(result: dict) -> list[str]:
+    names = [result.get("sample_name")] + [o.get("sample_name") for o in result.get("other_samples") or []]
+    return [n for n in names if n]
+
+
+def find_doi(text: str) -> str:
+    """The paper's DOI, from the first pages (header / footer: 'https://doi.org/10....', 'DOI: 10....')."""
+    head = text[:15000]
+    candidates = re.findall(r"(?:doi\.org/|doi:?\s*)(10\.\d{4,9}/\S+)", head, re.IGNORECASE) \
+        or re.findall(r"\b(10\.\d{4,9}/[^\s\"<>]+)", head)
+    if not candidates:
+        return ""
+    return candidates[0].rstrip(".,;:)]}'\"")
+
+
+def _rows(target: dict, result: dict, paper: str, doi: str) -> list[dict]:
+    """One row per sample: the main sample first (is_main = yes), then the other samples."""
+    base = {"paper": paper, "doi": doi, "item": target["name"], "parameter": target["parameter"],
+            "requested_unit": target.get("unit", ""), "details": target.get("details", ""),
+            "steps": result.get("steps"), "warnings": "; ".join(result.get("warnings") or [])}
+    main = {k: v for k, v in result.items() if k not in ("other_samples", "warnings", "steps")}
+    rows = [{**base, **main, "is_main": "yes" if result.get("status") in ("verified", "range_only") else ""}]
+    for o in result.get("other_samples") or []:
+        rows.append({**base, **o, "is_main": "no"})
+    return rows
 
 
 # Columns of the results table (results/<paper>_extraction.csv)
-CSV_COLUMNS = ["item", "parameter", "value", "range", "error", "unit",
+CSV_COLUMNS = ["paper", "doi", "item", "parameter", "sample_name", "is_main", "value", "range", "error", "unit",
                "standard_value", "standard_range", "standard_error", "standard_unit", "conversion_note",
-               "sample_name", "status", "method", "evidence", "range_evidence", "error_evidence", "note"]
+               "status", "method", "evidence", "range_evidence", "error_evidence", "note", "warnings"]
 
 
 def _write_csv(path: str, results: list[dict]) -> None:
@@ -134,7 +175,7 @@ def _write_csv(path: str, results: list[dict]) -> None:
 
 
 def _print_table(results: list[dict]) -> None:
-    rows = [["item", "value", "range", "error", "unit", "standard_value", "standard_range",
+    rows = [["item", "sample_name", "is_main", "value", "range", "error", "unit", "standard_value",
              "standard_unit", "status"]]
     rows += [[str(r.get(c) if r.get(c) is not None else "") for c in rows[0]] for r in results]
     widths = [min(30, max(len(row[i]) for row in rows)) for i in range(len(rows[0]))]
@@ -188,7 +229,7 @@ def plan_targets(prompt: str, params: dict | None = None) -> tuple[list, list]:
 
 # ============================================================ 2. extract one item
 def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[str],
-                params: dict | None = None) -> tuple[dict, list]:
+                params: dict | None = None, known_samples: list[str] | None = None) -> tuple[dict, list]:
     """Run the tool-using agent loop for ONE data item. Returns (result, trace)."""
     params = load_parameters() if params is None else params
     tools = PaperTools(paper_text, target, params)
@@ -204,7 +245,11 @@ def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[st
     if done_so_far:
         task.append("\nAlready extracted from this paper (for context, e.g. which sample is the main one):\n"
                     + "\n".join(done_so_far))
-    task.append("\nFinish by calling save_result for this item only.")
+    if known_samples:
+        task.append("\nSample names already used for this paper (reuse exactly these names for the same "
+                    "samples): " + ", ".join(known_samples))
+    task.append("\nReport EVERY sample of this paper that has a value for this item (main sample + "
+                "other_samples). Finish by calling save_result for this item only.")
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT},
                 _paper_message(paper_text),
@@ -212,7 +257,12 @@ def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[st
     trace = []
 
     for step in range(1, MAX_STEPS + 1):
-        msg = chat(messages, tools=TOOLS)
+        try:
+            msg = chat(messages, tools=TOOLS)
+        except RuntimeError as e:          # LLM down after retries: mark this item failed, keep the others
+            print(f"  [step {step}] LLM failed: {e}. Skipping this item.")
+            trace.append({"step": step, "error": str(e)})
+            break
         messages.append(_assistant_message(msg))
 
         if not msg.tool_calls:             # answered in text without a tool -> nudge it
@@ -253,8 +303,10 @@ def standardise_results(results: list[dict], params: dict) -> list[dict]:
 
 
 def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
-              params: dict | None = None) -> dict:
+              params: dict | None = None, doi: str | None = None) -> dict:
     params = load_parameters() if params is None else params
+    doi = doi or find_doi(paper_text)
+    print(f"DOI: {doi or 'not found in the text (give it with --doi)'}")
     print(f"Request: {prompt}\nParameter dictionary: {len(params)} entries\n\nPlanning...")
     targets, plan_trace = plan_targets(prompt, params)
     targets = match_parameters(targets, params)
@@ -266,21 +318,21 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
             print(f"    '{t['name']}' is not in the dictionary: extracting it anyway, without notes or a "
                   f"range check (add it with: python parameters.py add ...)")
 
-    results, item_traces, done_so_far = [], [], []
+    results, item_traces, done_so_far, known_samples = [], [], [], []
     for i, target in enumerate(targets, 1):
         print(f"\n[{i}/{len(targets)}] {_describe(target)}")
-        result, trace = extract_one(paper_text, target, prompt, done_so_far, params)
+        result, trace = extract_one(paper_text, target, prompt, done_so_far, params, known_samples)
         print(f"  => {_summary(target, result)[2:]}")
-        results.append({"item": target["name"], "parameter": target["parameter"],
-                        "requested_unit": target.get("unit", ""),
-                        "details": target.get("details", ""), **result})
+        results += _rows(target, result, paper_name, doi)
         item_traces.append({"item": target["name"], "trace": trace})
         done_so_far.append(_summary(target, result))
+        known_samples += [n for n in _sample_names(result) if n not in known_samples]
 
     print("\nStandardising units...")
     results = standardise_results(results, params)
 
-    final = {"paper": paper_name, "model": MODEL, "prompt": prompt, "results": results}
+    final = {"paper": paper_name, "doi": doi, "model": MODEL, "prompt": prompt,
+             "samples": known_samples, "results": results}
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
     with open(os.path.join(RESULTS_DIR, f"{paper_name}_extraction.json"), "w", encoding="utf-8") as f:
@@ -314,11 +366,12 @@ if __name__ == "__main__":
     parser.add_argument("paper", help="Paper PDF (or a .txt made by pdf_to_text.py)")
     parser.add_argument("prompt", nargs="?", default=DEFAULT_PROMPT, help="What data to extract")
     parser.add_argument("--si", help="Supporting Information PDF (optional)")
+    parser.add_argument("--doi", help="The paper's DOI, if it is not found in the text automatically")
     args = parser.parse_args()
 
     text, name = load_paper(args.paper, args.si)
     print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
-    final = run_agent(text, name, args.prompt)
+    final = run_agent(text, name, args.prompt, doi=args.doi)
     print("\nFINAL RESULTS:")
     _print_table(final["results"])
     print(f"\nFull results (with evidence quotes): {RESULTS_DIR}/{name}_extraction.json and .csv")

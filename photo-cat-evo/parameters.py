@@ -27,7 +27,8 @@ import re
 from config import PARAMETERS_FILE
 from units import UnitError, parse_unit
 
-FIELDS = ("aliases", "unit", "standard_unit", "plausible_range", "search_terms", "methods", "description")
+FIELDS = ("aliases", "unit", "standard_unit", "plausible_range", "search_terms", "methods", "description",
+          "allowed_values", "default_if_missing")
 
 
 # ============================================================ load / save
@@ -152,7 +153,12 @@ def describe_for_extractor(name: str, entry: dict) -> str:
         lines.append(f"- Good search terms: {', '.join(entry['search_terms'])}")
     if entry.get("plausible_range"):
         lo, hi = entry["plausible_range"]
-        lines.append(f"- Expected range: {lo}-{hi} {entry.get('unit', '')}".rstrip())
+        lines.append(f"- Expected range: {lo}-{hi} {entry.get('unit') or ''}".rstrip())
+    if entry.get("allowed_values"):
+        lines.append(f"- Usual answers (text, not a number): {', '.join(entry['allowed_values'])}")
+    if entry.get("default_if_missing"):
+        lines.append(f"- If the paper does not state it, save '{entry['default_if_missing']}' and say "
+                     f"'not stated, default' in note (the evidence can be the sentence describing the procedure)")
     return "\n".join(lines)
 
 

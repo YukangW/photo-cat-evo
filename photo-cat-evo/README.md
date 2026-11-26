@@ -119,12 +119,18 @@ Results:
 
 | Column | Meaning |
 |---|---|
+| `paper`, `doi` | File name and DOI of the paper (DOI found in the text automatically, or given with `--doi`) |
+| `sample_name`, `is_main` | **One row per sample.** Every sample made and measured in the paper gets its own row, with its name as written in the paper; `is_main = yes` for the best/main sample |
 | `value` | The specific value reported in the paper (preferred) |
 | `range` | Fallback when the paper only gives a range or bound, e.g. `2.6-2.8` or `>160`. Can also be filled alongside a value |
 | `error` | Uncertainty reported for that data, e.g. `± 0.02`, as written in the paper |
 | `standard_value`, `standard_range`, `standard_error`, `standard_unit` | The same data converted to the standard unit for that kind of measurement (see below) |
 | `conversion_note` | What conversion was done, or why it could not be (e.g. no unit reported, `a.u.`) |
 | `evidence`, `range_evidence`, `error_evidence` | Exact quotes from the paper; each one is checked against the text, and must contain its numbers |
+
+Values from other papers (quotes with `[12]`, `et al.`, `previously reported`, comparison tables) are
+rejected, and every sample name must appear in the paper. `warnings` flags values whose quote does not
+mention the sample's name, so you can double-check them.
 
 Status values: `verified` (specific value found and checked), `range_only` (no specific value, but a range
 or bound was found and checked), `not_reported`, `failed` (no valid answer within 8 steps).

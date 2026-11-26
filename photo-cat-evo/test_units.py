@@ -146,10 +146,10 @@ def test_agent_adds_standard_columns_after_extraction(monkeypatch, tmp_path):
     replies = [
         _msg(_Call("set_targets", {"targets": [{"name": "H2 evolution rate"}, {"name": "pore size"},
                                                {"name": "fluorescence lifetime"}]})),
-        _msg(_Call("save_result", {"value": 6.0, "unit": "mmol g−1 h−1", "error": "± 0.3",
+        _msg(_Call("save_result", {"value": 6.0, "unit": "mmol g−1 h−1", "error": "± 0.3", "sample_name": "DCN",
                                    "evidence": "H2 evolution rate of 6.0 mmol g−1 h−1 (± 0.3)"})),
-        _msg(_Call("save_result", {"value": 38, "unit": "Å", "evidence": "average pore size of DCN is 38 Å"})),
-        _msg(_Call("save_result", {"value": 8.47, "unit": "ns",
+        _msg(_Call("save_result", {"value": 38, "unit": "Å", "sample_name": "DCN", "evidence": "average pore size of DCN is 38 Å"})),
+        _msg(_Call("save_result", {"value": 8.47, "unit": "ns", "sample_name": "DCN",
                                    "evidence": "fluorescence lifetime of DCN is 8.47 ns"})),
     ]
     chat = _fake_chat(replies)

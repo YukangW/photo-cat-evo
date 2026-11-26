@@ -12,19 +12,42 @@ Extraction (once per data item):
   save_result(...)                -> final answer; runs the checks and REJECTS it if they fail
 """
 import re
+import unicodedata
 
 from parameters import find_parameter, load_parameters
 from units import UnitError, convert
 
 
 def _normalize(s: str) -> str:
-    """Make text comparable: lowercase, unify dashes/minus/spaces, drop extra whitespace."""
+    """Make text comparable: ligatures, invisible characters, dashes, quotes, case and spaces."""
+    s = unicodedata.normalize("NFKC", s)                       # ligatures (ﬁ -> fi), subscripts, full-width chars
+    s = re.sub(r"[\u00ad\u200b-\u200f\u2060\ufeff]", "", s)    # soft hyphens, zero-width characters
     s = s.lower()
-    s = s.replace("−", "-").replace("–", "-").replace("—", "-")
-    s = s.replace(" ", " ").replace(" ", " ")
+    for dash in ("\u2212", "\u2013", "\u2014", "\u2010", "\u2011"):
+        s = s.replace(dash, "-")
+    s = s.replace("\u2018", "'").replace("\u2019", "'").replace("\u201c", '"').replace("\u201d", '"')
     # remove ALL whitespace: PDFs often split formulas ("C3 N4 -VI") or lines unpredictably,
     # while the model usually writes them without spaces ("C3N4-VI")
     return re.sub(r"\s+", "", s)
+
+
+# Signs that a quote reports a value from ANOTHER paper (introduction, comparison tables, cited work)
+_CITATION_PATTERNS = [
+    (r"\[\s*\d+(?:\s*[,\u2013\u2212-]\s*\d+)*\s*\]", "a reference number like [12]"),
+    (r"\bet\s+al\b", "'et al.'"),
+    (r"\bref(?:erence)?s?\.?\s*\[?\d", "a reference ('Ref. 12')"),
+    (r"\bpreviously\s+reported\b|\breported\s+(?:previously|earlier|in\s+the\s+literature)\b",
+     "'previously reported'"),
+    (r"\bin\s+the\s+literature\b|\bliterature\s+values?\b", "'literature'"),
+]
+
+
+def _literature_reason(quote: str) -> str:
+    """'' if the quote looks like this paper's own result, else why it looks like a value from other work."""
+    for pattern, what in _CITATION_PATTERNS:
+        if re.search(pattern, quote or "", re.IGNORECASE):
+            return what
+    return ""
 
 
 def _numbers_in(text: str) -> list[float]:
@@ -175,65 +198,135 @@ class PaperTools:
                             f"Copy the {label} exactly as written in the paper.")
         return problems
 
-    def save_result(self, value=None, unit: str = "", evidence: str = "", sample_name: str = "",
-                    method: str = "", all_values: list | None = None, note: str = "",
-                    range: str = "", range_evidence: str = "",
-                    error: str = "", error_evidence: str = "") -> dict:
-        """Final answer for this data item. Rejected (agent must fix it) if the checks fail.
-
-        value  -> a specific value reported in the paper (preferred)
-        range  -> fallback when only a range or bound is given, e.g. "2.6-2.8" or ">160"
-        error  -> uncertainty reported with the value or range, e.g. "± 0.05"
-        range_evidence / error_evidence default to evidence when they come from the same quote.
-        """
-        if isinstance(value, str) and not value.strip():
-            value = None
-        if isinstance(value, str):     # the model sometimes sends a number as a string ("3.05")
-            try:
-                value = float(value.strip())
-            except ValueError:
-                pass
-        range, error = (range or "").strip(), (error or "").strip()
-        range_evidence = (range_evidence or "").strip() or evidence
-        error_evidence = (error_evidence or "").strip() or evidence
-
-        if value is None and not range:          # "not reported" is a valid answer
-            self.result = {"value": None, "range": "", "error": "", "unit": unit,
-                           "sample_name": sample_name, "evidence": evidence, "note": note,
-                           "status": "not_reported"}
-            return {"saved": True, "status": "not_reported"}
-
-        problems = []
+    def _check_one(self, label: str, value, unit: str, evidence: str, sample_name: str,
+                   range: str, range_evidence: str, error: str, error_evidence: str) -> tuple[list, list]:
+        """All checks for ONE sample's value. Returns (problems, warnings)."""
+        problems, warnings = [], []
+        if not sample_name.strip():
+            problems.append(f"{label}: give the sample name exactly as written in the paper "
+                            f"(e.g. 'CN-550', 'P25', 'bulk g-C3N4').")
+        elif _normalize(sample_name) not in self.norm_text:
+            problems.append(f"{label}: sample name '{sample_name}' does not appear in the paper. "
+                            f"Copy it exactly as the paper writes it.")
+        elif _normalize(sample_name) not in _normalize(evidence + " " + range_evidence):
+            warnings.append(f"{label}: sample name '{sample_name}' is not in the quote; make sure the value "
+                            f"really belongs to this sample.")
+        for quote in {evidence, range_evidence, error_evidence} - {""}:
+            if why := _literature_reason(quote):
+                problems.append(f"{label}: the quote contains {why}, so it looks like a value from another "
+                                f"paper. Only report values measured on samples made in THIS paper.")
+                break
         if value is not None:
             ev = self.check_evidence(evidence)
             if not ev["found"]:
-                problems.append(ev["reason"])
+                problems.append(f"{label}: {ev['reason']}")
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 if not _number_in(value, evidence):
-                    problems.append(f"The value {value} does not appear in the evidence quote. "
+                    problems.append(f"{label}: the value {value} does not appear in the evidence quote. "
                                     f"Report the number exactly as written in the quote.")
                 pl = self.check_plausible(value, unit)
                 if not pl["plausible"]:
-                    problems.append(pl["reason"])
+                    problems.append(f"{label}: {pl['reason']}")
             elif _normalize(str(value)) not in _normalize(evidence):   # text answer, e.g. "anatase"
-                problems.append(f"The text value '{value}' does not appear in the evidence quote.")
+                problems.append(f"{label}: the text value '{value}' does not appear in the evidence quote.")
         if range:
-            problems += self._check_extra("range", range, range_evidence)
+            problems += [f"{label}: {p}" for p in self._check_extra("range", range, range_evidence)]
         if error:
-            problems += self._check_extra("error", error, error_evidence)
+            problems += [f"{label}: {p}" for p in self._check_extra("error", error, error_evidence)]
+        return problems, warnings
+
+    @staticmethod
+    def _as_value(value):
+        if isinstance(value, str) and not value.strip():
+            return None
+        if isinstance(value, str):     # the model sometimes sends a number as a string ("3.05")
+            try:
+                return float(value.strip())
+            except ValueError:
+                return value.strip()
+        return value
+
+    def save_result(self, value=None, unit: str = "", evidence: str = "", sample_name: str = "",
+                    method: str = "", other_samples: list | None = None, note: str = "",
+                    range: str = "", range_evidence: str = "",
+                    error: str = "", error_evidence: str = "", all_values: list | None = None) -> dict:
+        """Final answer for this data item, for EVERY sample of the paper. Rejected if any check fails.
+
+        value / sample_name ... -> the main (best) sample
+        other_samples           -> every other sample made and measured in THIS paper, each with
+                                   sample_name, value (or range), unit, evidence
+        Every sample needs its name as written in the paper; quotes that cite other work are rejected.
+        """
+        value = self._as_value(value)
+        range, error = (range or "").strip(), (error or "").strip()
+        range_evidence = (range_evidence or "").strip() or evidence
+        error_evidence = (error_evidence or "").strip() or evidence
+        others_in = other_samples if other_samples is not None else (all_values or [])
+
+        if value is None and not range and not others_in:     # "not reported" is a valid answer
+            self.result = {"value": None, "range": "", "error": "", "unit": unit,
+                           "sample_name": sample_name, "evidence": evidence, "note": note,
+                           "other_samples": [], "warnings": [], "status": "not_reported"}
+            return {"saved": True, "status": "not_reported"}
+
+        problems, warnings = [], []
+        if value is not None or range:
+            p, w = self._check_one(f"main sample '{sample_name}'", value, unit, evidence, sample_name,
+                                   range, range_evidence, error, error_evidence)
+            problems += p
+            warnings += w
+
+        others, seen = [], {_normalize(sample_name)} if sample_name else set()
+        for i, o in enumerate(others_in, 1):
+            if not isinstance(o, dict):
+                problems.append(f"other_samples[{i}] must be an object with sample_name, value and evidence.")
+                continue
+            name = str(o.get("sample_name") or o.get("sample") or "").strip()
+            o_value = self._as_value(o.get("value"))
+            o_range = str(o.get("range") or "").strip()
+            o_unit = str(o.get("unit") or unit or "").strip()
+            o_ev = str(o.get("evidence") or "").strip()
+            o_rev = str(o.get("range_evidence") or "").strip() or o_ev
+            o_err = str(o.get("error") or "").strip()
+            o_eev = str(o.get("error_evidence") or "").strip() or o_ev
+            label = f"other sample '{name or i}'"
+            if o_value is None and not o_range:
+                problems.append(f"{label}: give a value (or a range). Leave out samples with no reported value.")
+                continue
+            if _normalize(name) in seen:
+                problems.append(f"{label}: this sample is listed twice.")
+                continue
+            seen.add(_normalize(name))
+            p, w = self._check_one(label, o_value, o_unit, o_ev, name, o_range, o_rev, o_err, o_eev)
+            problems += p
+            warnings += w
+            others.append({"sample_name": name, "value": o_value, "range": o_range, "error": o_err,
+                           "unit": o_unit, "evidence": o_ev, "range_evidence": o_rev if o_range else "",
+                           "error_evidence": o_eev if o_err else "",
+                           "method": str(o.get("method") or method or ""), "note": str(o.get("note") or ""),
+                           "status": "verified" if o_value is not None else "range_only"})
 
         if problems:
             return {"saved": False, "problems": problems,
-                    "instruction": "Fix these problems and call save_result again, "
-                                   "or call save_result with value=null if this data is not reported."}
+                    "instruction": "Fix these problems and call save_result again (you can drop samples whose "
+                                   "value you cannot quote), or call save_result with value=null if this data "
+                                   "is not reported for any sample of this paper."}
 
+        if value is None and not range and others:     # no main value: promote the first other sample
+            first = others.pop(0)
+            value, range, error, unit = first["value"], first["range"], first["error"], first["unit"]
+            sample_name, evidence = first["sample_name"], first["evidence"]
+            range_evidence, error_evidence = first["range_evidence"] or evidence, first["error_evidence"] or evidence
         status = "verified" if value is not None else "range_only"
         self.result = {"value": value, "range": range, "error": error, "unit": unit,
                        "sample_name": sample_name, "method": method, "evidence": evidence,
                        "range_evidence": range_evidence if range else "",
                        "error_evidence": error_evidence if error else "",
-                       "all_values": all_values or [], "note": note, "status": status}
-        return {"saved": True, "status": status}
+                       "other_samples": others, "warnings": warnings, "note": note, "status": status}
+        out = {"saved": True, "status": status, "n_samples": 1 + len(others)}
+        if warnings:
+            out["warnings"] = warnings
+        return out
 
     # ----------------------------------------------------- dispatch by name
     def run(self, name: str, args: dict) -> dict:
@@ -287,8 +380,10 @@ TOOLS = [
                        "required": ["value", "from_unit", "to_unit"]}}},
     {"type": "function", "function": {
         "name": "save_result",
-        "description": "Save the FINAL answer for the current data item. The system checks the evidence "
-                       "and the value; if a check fails the result is rejected and you must fix it. "
+        "description": "Save the FINAL answer for the current data item, for EVERY sample of this paper: "
+                       "the main (best) sample in value/sample_name, all other samples in other_samples. "
+                       "The system checks every value, sample name and quote; quotes citing other work "
+                       "([12], et al., previously reported) are rejected. If a check fails, fix it and retry. "
                        "Give a specific value if the paper reports one. If it only gives a range or bound, "
                        "set value=null and fill 'range'. Fill 'error' if an uncertainty is reported. "
                        "Use value=null and range='' if the paper does not report this data.",
@@ -301,13 +396,29 @@ TOOLS = [
                            "evidence": {"type": "string",
                                         "description": "Exact quote from the paper containing the value."},
                            "sample_name": {"type": "string",
-                                           "description": "Sample name as written in the paper, e.g. 'TiO2-500'."},
+                                           "description": "Name of the MAIN (best) sample exactly as written in "
+                                                          "the paper, e.g. 'TiO2-500'. Required."},
                            "method": {"type": "string",
                                       "description": "How it was determined, e.g. 'Tauc plot from UV-vis DRS'."},
-                           "all_values": {"type": "array",
-                                          "description": "Values for other samples, "
-                                                         "e.g. [{'sample':'P25','value':3.2}].",
-                                          "items": {"type": "object"}},
+                           "other_samples": {
+                               "type": "array",
+                               "description": "EVERY other sample made and measured in THIS paper that has a "
+                                              "value for this data item (pristine/reference samples too, e.g. "
+                                              "bulk g-C3N4 or P25 if the authors measured them). Each needs "
+                                              "its own name and quote; one quote can cover several samples "
+                                              "(a table row, or a '... respectively' sentence). Never include "
+                                              "values from other papers.",
+                               "items": {"type": "object",
+                                         "properties": {
+                                             "sample_name": {"type": "string",
+                                                             "description": "Name exactly as in the paper."},
+                                             "value": {"type": ["number", "string", "null"]},
+                                             "unit": {"type": "string"},
+                                             "evidence": {"type": "string",
+                                                          "description": "Exact quote containing this value."},
+                                             "range": {"type": "string"},
+                                             "error": {"type": "string"}},
+                                         "required": ["sample_name", "value", "evidence"]}},
                            "range": {"type": "string",
                                      "description": "ONLY if the paper gives a range or bound instead of (or as "
                                                     "well as) a specific value, copied as written, e.g. "
@@ -323,5 +434,5 @@ TOOLS = [
                                               "description": "Exact quote containing the error, if it is not "
                                                              "already in 'evidence'."},
                            "note": {"type": "string"}},
-                       "required": ["value", "evidence"]}}},
+                       "required": ["value", "evidence", "sample_name"]}}},
 ]
