@@ -21,7 +21,10 @@
     "methods": [
       "Tauc plot from UV-vis diffuse reflectance spectra (DRS)"
     ],
-    "description": "Energy needed to excite an electron from the valence to the conduction band. Usually from UV-vis DRS with a Tauc plot, written like 'the band gap of ... is 2.72 eV'. Do not confuse with sub-bandgap / midgap transitions or DFT-calculated values unless asked."
+    "description": "Energy needed to excite an electron from the valence to the conduction band. Usually from UV-vis DRS with a Tauc plot, written like 'the band gap of ... is 2.72 eV'. Do not confuse with sub-bandgap / midgap transitions or DFT-calculated values unless asked. If only an absorption edge wavelength is given (e.g. '455 nm'), that may be saved as the value in nm; it is converted to eV with E = hc/λ afterwards.",
+    "contexts": [
+      "spectroscopy"
+    ]
   },
   "BET surface area": {
     "aliases": [
@@ -116,7 +119,8 @@
     "methods": [
       "Photocatalytic H2 evolution measured by gas chromatography"
     ],
-    "description": "Rate of photocatalytic hydrogen production, normalised by catalyst mass (per g per h). Papers use µmol or mmol: report the unit exactly as written. Note the light source and sacrificial agent in 'method'."
+    "description": "Rate of photocatalytic hydrogen production, normalised by catalyst mass (per g per h). Papers use µmol or mmol: report the unit exactly as written. Note the light source and sacrificial agent in 'method'.",
+    "species": "H2"
   },
   "O2 evolution rate": {
     "aliases": [
@@ -138,7 +142,8 @@
     "methods": [
       "Photocatalytic O2 evolution measured by gas chromatography"
     ],
-    "description": "Rate of photocatalytic oxygen production, normalised by catalyst mass."
+    "description": "Rate of photocatalytic oxygen production, normalised by catalyst mass.",
+    "species": "O2"
   },
   "apparent quantum yield": {
     "aliases": [
@@ -209,7 +214,11 @@
     "methods": [
       "Mott-Schottky plot, or calculated from band gap and VB position"
     ],
-    "description": "Conduction band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) and pH in 'note'. Negative values are common."
+    "description": "Conduction band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) and pH in 'note'. Negative values are common.",
+    "reference": "NHE",
+    "contexts": [
+      "electron"
+    ]
   },
   "valence band potential": {
     "aliases": [
@@ -234,7 +243,11 @@
     "methods": [
       "VB-XPS, or calculated from band gap and CB position"
     ],
-    "description": "Valence band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) in 'note'."
+    "description": "Valence band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) in 'note'.",
+    "reference": "NHE",
+    "contexts": [
+      "electron"
+    ]
   },
   "photocurrent density": {
     "aliases": [
@@ -435,5 +448,57 @@
       "Synthesis conditions"
     ],
     "description": "Gas environment during the thermal treatment. If the paper does not state it (e.g. a muffle furnace with no gas mentioned), use 'air' as Li et al. did, and say 'not stated, default air' in 'note'."
+  },
+  "catalyst mass": {
+    "aliases": [
+      "photocatalyst mass",
+      "amount of catalyst",
+      "catalyst loading",
+      "catalyst dosage",
+      "mass of catalyst"
+    ],
+    "unit": "mg",
+    "plausible_range": [
+      0.01,
+      10000
+    ],
+    "search_terms": [
+      "mg of",
+      "mg photocatalyst",
+      "mg catalyst",
+      "g of the",
+      "dispersed in",
+      "suspended"
+    ],
+    "methods": [
+      "Stated in the photocatalytic test procedure"
+    ],
+    "description": "Mass of photocatalyst used in the activity test, e.g. '50 mg of the photocatalyst was dispersed in 100 mL ...'. Usually in the experimental section. Needed to turn a rate in µmol h-1 into µmol g-1 h-1.",
+    "search_papers": false
+  },
+  "electrolyte pH": {
+    "aliases": [
+      "pH",
+      "solution pH",
+      "pH of the electrolyte"
+    ],
+    "unit": "",
+    "plausible_range": [
+      0,
+      14
+    ],
+    "search_terms": [
+      "pH",
+      "Na2SO4",
+      "electrolyte",
+      "Mott-Schottky",
+      "KOH",
+      "PBS"
+    ],
+    "methods": [
+      "Stated in the electrochemical measurement procedure"
+    ],
+    "description": "pH of the electrolyte used for electrochemical measurements (e.g. Mott-Schottky). Needed to convert potentials between the RHE and NHE scales (E_RHE = E_NHE + 0.0591 pH). If only the electrolyte is named (e.g. '0.5 M Na2SO4') and no pH number is given in the text, save value = null.",
+    "search_papers": false
   }
 }

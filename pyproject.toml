@@ -4,13 +4,17 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "openai>=1.40",
+    "openpyxl>=3.1",
+    "periodictable>=1.7",
     "pint>=0.24",
     "pymupdf>=1.24",
+    "requests>=2.31",
 ]
 
 [project.scripts]
 PhotoCatEvo = "PhotoCatEvo.agent:main"
 PhotoCatEvo-table = "PhotoCatEvo.organize:main"
+PhotoCatEvo-collect = "PhotoCatEvo.collect_papers:main"
 
 [dependency-groups]
 dev = ["pytest>=8"]

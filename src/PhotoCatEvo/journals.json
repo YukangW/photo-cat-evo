@@ -1,0 +1,32 @@
+{
+  "_comment": "Open-access journals that publish photocatalysis papers. Add or remove names freely: each name is looked up in OpenAlex when you run collect_papers.py, and journals that OpenAlex does not list as open access are skipped (the run tells you which).",
+  "journals": [
+    "RSC Advances",
+    "Nanoscale Advances",
+    "Materials Advances",
+    "EES Catalysis",
+    "Chemical Science",
+    "Catalysts",
+    "Nanomaterials",
+    "Molecules",
+    "Materials",
+    "Scientific Reports",
+    "Nature Communications",
+    "Communications Chemistry",
+    "Communications Materials",
+    "ACS Omega",
+    "JACS Au",
+    "ACS Central Science",
+    "Advanced Science",
+    "Small Science",
+    "Carbon Energy",
+    "EcoMat",
+    "SusMat",
+    "Frontiers in Chemistry",
+    "Heliyon",
+    "Results in Chemistry",
+    "Applied Catalysis O: Open",
+    "Chemical Engineering Journal Advances",
+    "Materials Today Advances"
+  ]
+}

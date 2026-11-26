@@ -8,8 +8,9 @@ import pytest
 
 from PhotoCatEvo import agent
 from PhotoCatEvo.parameters import add_parameter, load_parameters, standard_unit_for
+from PhotoCatEvo.standardise import standardise
 from PhotoCatEvo.tools import PaperTools
-from PhotoCatEvo.units import UnitError, convert, convert_error, convert_text, parse_unit, si_unit, standardise
+from PhotoCatEvo.units import UnitError, convert, convert_error, convert_text, parse_unit, si_unit
 from test_agent import _Call, _fake_chat, _msg, _tmp_results  # noqa: F401  (fixture: results go to tmp)
 
 
@@ -69,7 +70,8 @@ def test_si_unit():
 def test_convert_unit_tool():
     t = PaperTools("text", {"name": "x"}, {})
     assert t.run("convert_unit", {"value": 5e-9, "from_unit": "m", "to_unit": "nm"})["value"] == 5.0
-    assert "error" in t.run("convert_unit", {"value": 1, "from_unit": "eV", "to_unit": "nm"})
+    assert t.run("convert_unit", {"value": 1, "from_unit": "eV", "to_unit": "nm"})["value"] == pytest.approx(1239.84, rel=1e-5)
+    assert "error" in t.run("convert_unit", {"value": 1, "from_unit": "eV", "to_unit": "kg"})
     assert "error" in t.run("convert_unit", {"value": 1, "from_unit": "a.u.", "to_unit": "nm"})
 
 
@@ -79,13 +81,13 @@ def _res(**kw):
 
 
 def test_standardise_to_dictionary_unit():
-    s = standardise(_res(value=6.0, unit="mmol g−1 h−1", error="± 0.3"), "µmol g-1 h-1")
+    s = standardise(_res(value=6.0, unit="mmol g−1 h−1", error="± 0.3"), {"unit": "µmol g-1 h-1"})
     assert (s["standard_value"], s["standard_error"], s["standard_unit"]) == (6000.0, "± 300", "µmol g-1 h-1")
     assert "Converted from mmol g−1 h−1" in s["conversion_note"]
 
 
 def test_standardise_range_only():
-    s = standardise(_res(status="range_only", range=">160", unit="m2 g−1"), "m2 g-1")
+    s = standardise(_res(status="range_only", range=">160", unit="m2 g−1"), {"unit": "m2 g-1"})
     assert (s["standard_value"], s["standard_range"]) == (None, ">160")
     assert s["conversion_note"] == "Already in m2 g-1."
 
@@ -101,23 +103,23 @@ def test_standardise_dimensionless_not_in_dictionary():
 
 
 def test_standardise_keeps_reference_electrode_in_note():
-    s = standardise(_res(value=-1.12, unit="V vs. NHE"), "V")
+    s = standardise(_res(value=-1.12, unit="V vs. NHE"), {"unit": "V"})
     assert s["standard_value"] == -1.12 and "vs. NHE" in s["conversion_note"]
 
 
 @pytest.mark.parametrize("result, std_unit, note", [
     (_res(value=2.7, unit=""), "eV", "No unit reported"),            # dictionary expects a unit
     (_res(value="anatase"), None, "Text value"),
-    (_res(value=2.7, unit="eV"), "nm", "measure different things"),  # wrong dictionary unit
+    (_res(value=2.7, unit="eV"), "nm", "measure different things"),  # no spectroscopy context allowed
     (_res(value=3.0, unit="a.u."), None, "arbitrary"),
 ])
 def test_standardise_cannot_convert(result, std_unit, note):
-    s = standardise(result, std_unit)
+    s = standardise(result, {"unit": std_unit} if std_unit else None)
     assert s["standard_value"] is None and note in s["conversion_note"]
 
 
 def test_standardise_skips_failed_and_not_reported():
-    assert standardise({"status": "not_reported", "value": None}, "eV")["standard_unit"] == ""
+    assert standardise({"status": "not_reported", "value": None}, {"unit": "eV"})["standard_unit"] == ""
 
 
 # ------------------------------------------------------------ dictionary

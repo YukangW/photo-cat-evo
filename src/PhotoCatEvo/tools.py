@@ -8,14 +8,16 @@ Extraction (once per data item):
   search_text(keyword)            -> sentences of the paper containing the keyword
   check_evidence(quote)           -> is this quote really in the paper?
   check_plausible(value, unit)    -> is this value in the expected range (from the parameter dictionary)?
-  convert_unit(value, from, to)   -> convert a value between units with Pint (e.g. m -> nm)
+  convert_unit(value, from, to)   -> convert a value between units with Pint (m -> nm, eV -> nm, V vs. RHE -> NHE)
+  molar_mass(formula)             -> molar mass in g/mol (periodictable), e.g. H2 -> 2.016
   save_result(...)                -> final answer; runs the checks and REJECTS it if they fail
 """
 import re
 import unicodedata
 
 from .parameters import find_parameter, load_parameters
-from .units import UnitError, convert
+from .conversions import NeedsValue, amount_rate_converter, convert_potential, find_reference, molar_mass
+from .units import CONTEXTS, UnitError, convert, needs_context, strip_reference
 
 
 def _normalize(s: str) -> str:
@@ -142,7 +144,10 @@ class PaperTools:
         self.target = target or {"name": "band gap", "unit": "eV"}
         params = load_parameters() if params is None else params
         # use the dictionary entry the agent matched, else look the item's name up
-        self.range = plausible_range(self.target.get("parameter") or self.target["name"], params)
+        key = self.target.get("parameter") or self.target["name"]
+        match = find_parameter(key, params)
+        self.entry = match[1] if match else {}
+        self.range = plausible_range(key, params)
         self.result = None          # filled by save_result
 
     # ---------------------------------------------------------------- tools
@@ -175,10 +180,10 @@ class PaperTools:
                     "reason": f"No range is defined for '{name}', so only the evidence is checked."}
         lo, hi, range_unit = self.range
         shown = f"{value} {unit or range_unit}".strip()
-        if unit and range_unit:                   # compare in the range's unit, e.g. mmol -> µmol
+        if unit and range_unit:                   # compare in the range's unit, e.g. mmol -> µmol, nm -> eV
             try:
-                value = convert(value, unit, range_unit)
-            except UnitError as e:
+                value = self._to_range_unit(value, unit, range_unit)
+            except (UnitError, NeedsValue) as e:
                 return {"plausible": True,
                         "reason": f"Could not compare with the expected range in {range_unit} ({e}), "
                                   f"so the range was not checked."}
@@ -190,12 +195,37 @@ class PaperTools:
                           f"{shown} is outside the expected range for {name} ({lo}-{hi} {range_unit}). "
                           f"Check the unit or the sample."}
 
-    def convert_unit(self, value: float, from_unit: str, to_unit: str) -> dict:
-        """Convert a value between units with Pint, e.g. 5e-9 m -> 5 nm, 6 mmol g-1 h-1 -> 6000 µmol g-1 h-1."""
+    def _to_range_unit(self, value: float, unit: str, range_unit: str) -> float:
+        """Value in the range's unit, using the entry's contexts / species if a plain conversion is impossible.
+        (Reference electrodes are ignored here: the ranges are wide compared with the shifts.)"""
+        unit, range_unit = strip_reference(unit), strip_reference(range_unit)
         try:
-            return {"value": convert(value, from_unit, to_unit), "unit": to_unit,
-                    "from": f"{value} {from_unit}"}
+            return convert(value, unit, range_unit, self.entry.get("contexts", []))
+        except UnitError:
+            fn, _ = amount_rate_converter(unit, range_unit, self.entry.get("species"))
+            return round(fn(value), 10)
+
+    def convert_unit(self, value: float, from_unit: str, to_unit: str, pH: float | None = None) -> dict:
+        """Convert a value between units with Pint, e.g. 5e-9 m -> 5 nm, 6 mmol g-1 h-1 -> 6000 µmol g-1 h-1,
+        2.72 eV -> 455.8 nm (spectroscopy context), -0.4 V vs. Ag/AgCl -> V vs. NHE (pH needed for RHE)."""
+        try:
+            if find_reference(from_unit) or find_reference(to_unit):
+                return {"value": convert_potential(value, from_unit, to_unit, pH), "unit": to_unit,
+                        "from": f"{value} {from_unit}", "how": "reference electrode shift"}
+            ctx = needs_context(from_unit, to_unit, CONTEXTS)
+            out = {"value": convert(value, from_unit, to_unit, [ctx] if ctx else []), "unit": to_unit,
+                   "from": f"{value} {from_unit}"}
+            return {**out, "how": f"{ctx} context, {CONTEXTS[ctx]}"} if ctx else out
+        except NeedsValue as e:
+            return {"error": f"This conversion {e}. Pass pH=..."}
         except (UnitError, ValueError) as e:
+            return {"error": str(e)}
+
+    def molar_mass(self, formula: str) -> dict:
+        """Molar mass of a formula in g/mol, e.g. 'H2' -> 2.016."""
+        try:
+            return {"formula": formula, "molar_mass": molar_mass(formula), "unit": "g/mol"}
+        except UnitError as e:
             return {"error": str(e)}
 
     def _check_extra(self, label: str, text: str, quote: str) -> list[str]:
@@ -347,6 +377,7 @@ class PaperTools:
     def run(self, name: str, args: dict) -> dict:
         fn = {"search_text": self.search_text, "check_evidence": self.check_evidence,
               "check_plausible": self.check_plausible, "convert_unit": self.convert_unit,
+              "molar_mass": self.molar_mass,
               "save_result": self.save_result}.get(name)
         if fn is None:
             return {"error": f"Unknown tool '{name}'."}
@@ -385,14 +416,23 @@ TOOLS = [
     {"type": "function", "function": {
         "name": "convert_unit",
         "description": "Convert a value from one unit to another with the Pint library, e.g. 5e-9 m -> nm, "
-                       "6 mmol g-1 h-1 -> µmol g-1 h-1, 45 m2/g -> m2 g-1. Use it to compare values reported in "
-                       "different units. Do NOT use it to change what you save: save_result must have the value "
-                       "and unit exactly as written in the paper (results are standardised afterwards).",
+                       "6 mmol g-1 h-1 -> µmol g-1 h-1, 2.72 eV -> nm (E = hc/λ), 0.025 eV -> K, and potentials "
+                       "between reference electrodes, e.g. 'V vs. Ag/AgCl' -> 'V vs. NHE' (give pH for RHE). "
+                       "Use it to compare values reported in different units. Do NOT use it to change what you "
+                       "save: save_result must have the value and unit exactly as written in the paper "
+                       "(results are standardised afterwards).",
         "parameters": {"type": "object",
                        "properties": {"value": {"type": "number"},
-                                      "from_unit": {"type": "string", "description": "e.g. 'mmol g-1 h-1'"},
-                                      "to_unit": {"type": "string", "description": "e.g. 'µmol g-1 h-1'"}},
+                                      "from_unit": {"type": "string", "description": "e.g. 'mmol g-1 h-1', 'V vs. RHE'"},
+                                      "to_unit": {"type": "string", "description": "e.g. 'µmol g-1 h-1', 'V vs. NHE'"},
+                                      "pH": {"type": "number", "description": "Only for RHE conversions."}},
                        "required": ["value", "from_unit", "to_unit"]}}},
+    {"type": "function", "function": {
+        "name": "molar_mass",
+        "description": "Molar mass of a chemical formula in g/mol, e.g. 'H2' -> 2.016, 'C3N4' -> 92.06.",
+        "parameters": {"type": "object",
+                       "properties": {"formula": {"type": "string"}},
+                       "required": ["formula"]}}},
     {"type": "function", "function": {
         "name": "save_result",
         "description": "Save the FINAL answer for the current data item, for EVERY sample of this paper: "

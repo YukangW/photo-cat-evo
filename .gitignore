@@ -9,6 +9,10 @@ __pycache__/
 # Outputs from local extraction runs
 /results/
 /text/
+/papers/
+
+# Journal lookup cache from collect_papers
+.cache/
 
 # API KEY
 .env

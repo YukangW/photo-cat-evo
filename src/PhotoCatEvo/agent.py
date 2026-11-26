@@ -5,9 +5,11 @@ How it works
   1. Plan:    the LLM splits the prompt into separate data items ("band gap", "BET surface area", ...).
   2. Extract: the agent runs once PER ITEM, in order. Each run searches the paper with tools and must
               pass the evidence checks in save_result before it moves on to the next item.
-  3. Standardise: after extraction, every value/range/error is converted with Pint to the standard unit
-              for its kind of measurement (from parameters.json; SI base unit if it is not in there).
-              The values as written in the paper are kept; the converted ones go in extra columns.
+  3. Standardise: after extraction, every value/range/error is converted to the standard unit for its
+              kind of measurement (from parameters.json; SI base unit if it is not in there), using Pint,
+              Pint contexts (eV <-> nm) and conversions.py (reference electrodes, catalyst mass, molar mass).
+              If a conversion needs another value from the paper (pH, catalyst mass) the agent runs again
+              to extract it first. The values as written in the paper are kept; converted ones go in extra columns.
 
 Usage:
     uv run PhotoCatEvo papers/paper_001.pdf "Find the band gap and the BET surface area of the best sample"
@@ -29,10 +31,10 @@ import re
 from .config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
                      USE_PROMPT_CACHE)
 from .llm import chat
-from .parameters import (describe_for_extractor, describe_for_planner, find_parameter, load_parameters,
-                         standard_unit_for)
+from .parameters import describe_for_extractor, describe_for_planner, find_parameter, load_parameters
 from .tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
-from .units import standardise
+from .standardise import standardise
+from .units import UnitError, convert
 
 PLANNER_PROMPT = """You turn a user's data-extraction request into a list of separate data items.
 
@@ -164,7 +166,8 @@ def _rows(target: dict, result: dict, paper: str, doi: str) -> list[dict]:
 # Columns of the results table (results/<paper>_extraction.csv)
 CSV_COLUMNS = ["paper", "doi", "item", "parameter", "sample_name", "is_main", "value", "range", "error", "unit",
                "standard_value", "standard_range", "standard_error", "standard_unit", "conversion_note",
-               "status", "method", "evidence", "range_evidence", "error_evidence", "note", "warnings"]
+               "status", "method", "evidence", "range_evidence", "error_evidence", "note", "warnings",
+               "supporting_for"]
 
 
 def _write_csv(path: str, results: list[dict]) -> None:
@@ -302,14 +305,68 @@ def match_parameters(targets: list[dict], params: dict) -> list[dict]:
     return matched
 
 
-def standardise_results(results: list[dict], params: dict) -> list[dict]:
-    """Step 3, after extraction: add the standard_* columns to every result (the originals are kept)."""
+# Values some conversions need, and how to ask for them: need -> (dictionary entry, details for the extractor)
+SUPPORTING = {
+    "pH": ("electrolyte pH", "pH of the electrolyte used in the electrochemical measurement that gave the {items}. "
+                             "Needed to convert potentials between the RHE and NHE scales."),
+    "catalyst mass": ("catalyst mass", "mass of photocatalyst used in the activity test that gave the {items}. "
+                                       "Needed to normalise the rate per gram of catalyst."),
+}
+
+
+def _supporting_value(need: str, result: dict):
+    """The usable value of a supporting result: pH as a number, catalyst mass as (value, unit); else None."""
+    value = result.get("value")
+    if result.get("status") != "verified" or isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    if need == "pH":
+        return float(value) if 0 <= value <= 14 else None
+    try:
+        convert(1.0, result.get("unit") or "", "g")         # must be a mass
+    except UnitError:
+        return None
+    return float(value), result["unit"]
+
+
+def standardise_results(paper_text: str, prompt: str, results: list[dict], params: dict,
+                        done_so_far: list[str] | None = None) -> tuple[list[dict], list[dict]]:
+    """Step 3, after extraction: add the standard_* columns to every result (the originals are kept).
+
+    If a conversion needs a value from the paper (pH for RHE potentials, catalyst mass for per-gram rates),
+    the agent runs once more to extract it, then converts with it. Returns (results, traces of extra runs).
+    """
+    first = [standardise(r, params.get(r.get("parameter"))) for r in results]
+    needs: dict[str, list[str]] = {}
+    for r, std in zip(results, first):
+        for need in std["needs"]:
+            needs.setdefault(need, []).append(r["item"])
+
+    supporting, extra, traces = {}, [], []
+    for need, items in needs.items():
+        name, details = SUPPORTING[need]
+        found = next((r for r in results if r.get("parameter") == name), None)   # already asked for?
+        if found is None:
+            target = {"name": name, "unit": params.get(name, {}).get("unit", ""),
+                      "details": details.format(items=", ".join(items)), "parameter": name if name in params else ""}
+            print(f"\n[supporting] {name}: needed to convert {', '.join(items)}")
+            result, trace = extract_one(paper_text, target, prompt, done_so_far or [], params)
+            print(f"  => {_summary(target, result)[2:]}")
+            found = {"item": name, "parameter": target["parameter"], "requested_unit": target["unit"],
+                     "details": target["details"], **result, "supporting_for": ", ".join(items)}
+            extra.append(found)
+            traces.append({"item": f"{name} (supporting)", "trace": trace})
+        value = _supporting_value(need, found)
+        if value is not None:
+            supporting[need] = value
+
+    print("\nStandardised units:")
     out = []
-    for r in results:
-        std = standardise(r, standard_unit_for(params.get(r.get("parameter"))))
+    for r in results + extra:
+        std = standardise(r, params.get(r.get("parameter")), supporting)
+        std.pop("needs")
         print(f"  {r['item']}: {std['conversion_note'] or r.get('status')}")
         out.append({**r, **std})
-    return out
+    return out, traces
 
 
 def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
@@ -339,7 +396,8 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
         known_samples += [n for n in _sample_names(result) if n not in known_samples]
 
     print("\nStandardising units...")
-    results = standardise_results(results, params)
+    results, extra_traces = standardise_results(paper_text, prompt, results, params, done_so_far)
+    item_traces.extend(extra_traces)
 
     final = {"paper": paper_name, "doi": doi, "model": MODEL, "prompt": prompt,
              "samples": known_samples, "results": results}
