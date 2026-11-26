@@ -121,6 +121,7 @@ def remove_references(text: str) -> str:
 
 
 def clean(text: str) -> str:
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "-", text)   # broken minus signs / control chars -> "-"
     text = re.sub(r"-\n(?=[a-z])", "", text)        # join words split by hyphenation
     text = re.sub(r"[ \t]+", " ", text)             # collapse spaces
     text = re.sub(r"\n{3,}", "\n\n", text)          # collapse empty lines
