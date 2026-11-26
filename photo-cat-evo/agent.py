@@ -297,7 +297,8 @@ def load_paper(path: str, si_path: str | None = None) -> tuple[str, str]:
     name = os.path.splitext(os.path.basename(path))[0]
     if path.lower().endswith(".pdf"):
         from pdf_to_text import convert          # needs pymupdf, only imported for PDFs
-        text = convert(path, si_path)
+        text, n_tables = convert(path, si_path)
+        print(f"Converted PDF: {n_tables} tables found")
         os.makedirs(TEXT_DIR, exist_ok=True)
         with open(os.path.join(TEXT_DIR, f"{name}.txt"), "w", encoding="utf-8") as f:
             f.write(text)
