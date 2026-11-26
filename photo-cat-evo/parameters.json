@@ -1,0 +1,90 @@
+{
+  "band gap": {
+    "aliases": ["bandgap", "optical band gap", "energy gap", "Eg"],
+    "unit": "eV",
+    "plausible_range": [1.0, 4.5],
+    "search_terms": ["band gap", "bandgap", "Tauc", "absorption edge", "eV"],
+    "methods": ["Tauc plot from UV-vis diffuse reflectance spectra (DRS)"],
+    "description": "Energy needed to excite an electron from the valence to the conduction band. Usually from UV-vis DRS with a Tauc plot, written like 'the band gap of ... is 2.72 eV'. Do not confuse with sub-bandgap / midgap transitions or DFT-calculated values unless asked."
+  },
+  "BET surface area": {
+    "aliases": ["surface area", "specific surface area", "SSA", "SBET", "BET"],
+    "unit": "m2 g-1",
+    "plausible_range": [0.1, 3000],
+    "search_terms": ["BET", "surface area", "m2 g", "m2/g", "N2 adsorption", "isotherm"],
+    "methods": ["N2 adsorption-desorption isotherm, BET method"],
+    "description": "Specific surface area from N2 physisorption using the Brunauer-Emmett-Teller (BET) method. Often in a table or the text near the isotherm figure."
+  },
+  "pore volume": {
+    "aliases": ["total pore volume", "Vp"],
+    "unit": "cm3 g-1",
+    "plausible_range": [0.001, 5],
+    "search_terms": ["pore volume", "cm3 g", "cm3/g", "BJH"],
+    "methods": ["N2 adsorption-desorption isotherm (BJH or single point)"],
+    "description": "Total pore volume from N2 physisorption, usually reported together with the BET surface area."
+  },
+  "pore size": {
+    "aliases": ["pore diameter", "average pore size", "pore width"],
+    "unit": "nm",
+    "plausible_range": [0.3, 200],
+    "search_terms": ["pore size", "pore diameter", "BJH", "mesopor"],
+    "methods": ["BJH pore size distribution from N2 isotherm"],
+    "description": "Average or peak pore diameter, usually from the BJH pore-size distribution."
+  },
+  "H2 evolution rate": {
+    "aliases": ["hydrogen evolution rate", "HER rate", "H2 production rate", "hydrogen production rate", "H2 evolution"],
+    "unit": "µmol g-1 h-1",
+    "plausible_range": [0.01, 200000],
+    "search_terms": ["H2 evolution", "hydrogen evolution", "H2 production", "µmol", "mmol g", "HER"],
+    "methods": ["Photocatalytic H2 evolution measured by gas chromatography"],
+    "description": "Rate of photocatalytic hydrogen production, normalised by catalyst mass (per g per h). Papers use µmol or mmol: report the unit exactly as written. Note the light source and sacrificial agent in 'method'."
+  },
+  "O2 evolution rate": {
+    "aliases": ["oxygen evolution rate", "OER rate", "O2 production rate"],
+    "unit": "µmol g-1 h-1",
+    "plausible_range": [0.01, 100000],
+    "search_terms": ["O2 evolution", "oxygen evolution", "O2 production", "µmol"],
+    "methods": ["Photocatalytic O2 evolution measured by gas chromatography"],
+    "description": "Rate of photocatalytic oxygen production, normalised by catalyst mass."
+  },
+  "apparent quantum yield": {
+    "aliases": ["AQY", "apparent quantum efficiency", "AQE", "quantum efficiency", "quantum yield"],
+    "unit": "%",
+    "plausible_range": [0.001, 100],
+    "search_terms": ["AQY", "AQE", "quantum yield", "quantum efficiency", "nm"],
+    "methods": ["Measured under monochromatic light at a given wavelength"],
+    "description": "Percentage of incident photons that drive the reaction. Always note the wavelength (e.g. 'at 420 nm') in 'method' or 'note'."
+  },
+  "crystallite size": {
+    "aliases": ["crystal size", "grain size"],
+    "unit": "nm",
+    "plausible_range": [0.5, 500],
+    "search_terms": ["crystallite size", "Scherrer", "grain size"],
+    "methods": ["Scherrer equation from XRD peak broadening"],
+    "description": "Average crystallite size, usually calculated from XRD peak width with the Scherrer equation."
+  },
+  "conduction band potential": {
+    "aliases": ["conduction band", "CB potential", "CB position", "ECB", "CB edge"],
+    "unit": "V",
+    "plausible_range": [-3, 3],
+    "search_terms": ["conduction band", "CB", "Mott-Schottky", "flat band", "vs. NHE", "vs NHE"],
+    "methods": ["Mott-Schottky plot, or calculated from band gap and VB position"],
+    "description": "Conduction band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) and pH in 'note'. Negative values are common."
+  },
+  "valence band potential": {
+    "aliases": ["valence band", "VB potential", "VB position", "EVB", "VB edge"],
+    "unit": "V",
+    "plausible_range": [-1, 5],
+    "search_terms": ["valence band", "VB", "XPS valence", "vs. NHE", "vs NHE"],
+    "methods": ["VB-XPS, or calculated from band gap and CB position"],
+    "description": "Valence band edge potential. Note the reference electrode (vs. NHE, RHE, Ag/AgCl) in 'note'."
+  },
+  "photocurrent density": {
+    "aliases": ["photocurrent", "transient photocurrent"],
+    "unit": "µA cm-2",
+    "plausible_range": [0.001, 100000],
+    "search_terms": ["photocurrent", "µA cm", "mA cm", "i-t"],
+    "methods": ["Transient photocurrent response (chopped light)"],
+    "description": "Current density under illumination. Papers use µA or mA cm-2: report the unit exactly as written."
+  }
+}
