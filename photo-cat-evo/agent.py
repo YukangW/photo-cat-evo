@@ -59,6 +59,10 @@ Rules:
    - Put the MAIN sample (the optimised/best one the paper focuses on, unless the item's details name
      a sample) in value / sample_name, and every other sample in other_samples.
    - Use the same sample names as earlier items of this paper (they are listed in the user message).
+   - Material properties (band gap, surface area, XRD, ...) are often measured BEFORE the cocatalyst is
+     added: e.g. the band gap is given for CNU20 while the best H2 sample is Pt-CNU20. Then report the
+     values of the samples the paper actually measured (CNU20 as main sample); do not search for a value
+     of the loaded sample that the paper does not give.
    - NEVER report values from other papers: statements in the introduction, values of other works
      in comparison tables, or anything with a citation ([12], "et al.", "previously reported").
      Quotes with citations are rejected automatically.
@@ -275,6 +279,12 @@ def extract_one(paper_text: str, target: dict, prompt: str, done_so_far: list[st
         _run_tool_calls(msg, tools, messages, trace, step)
         if tools.result is not None:       # save_result accepted -> this item is done
             break
+        left = MAX_STEPS - step
+        if left in (1, 2):                 # running out of steps: make it save what it has
+            messages.append({"role": "user", "content": (
+                f"Only {left} step{'s' if left > 1 else ''} left for this item. If you already found quotes with "
+                f"values, call save_result NOW with them (main sample + other_samples). Do not keep searching. "
+                f"If nothing was found, save value=null.")})
 
     result = tools.result or {"value": None, "status": "failed",
                               "note": f"No valid result after {MAX_STEPS} steps."}

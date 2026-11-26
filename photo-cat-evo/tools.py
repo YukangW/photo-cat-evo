@@ -31,6 +31,15 @@ def _normalize(s: str) -> str:
     return re.sub(r"\s+", "", s)
 
 
+def _search_normalize(s: str) -> str:
+    """Like _normalize, but keeps single spaces (used to search for keywords)."""
+    s = unicodedata.normalize("NFKC", s)
+    s = re.sub(r"[\u00ad\u200b-\u200f\u2060\ufeff]", "", s)
+    for dash in ("\u2212", "\u2013", "\u2014", "\u2010", "\u2011"):
+        s = s.replace(dash, "-")
+    return re.sub(r"\s+", " ", s.lower()).strip()
+
+
 # Signs that a quote reports a value from ANOTHER paper (introduction, comparison tables, cited work)
 _CITATION_PATTERNS = [
     (r"\[\s*\d+(?:\s*[,\u2013\u2212-]\s*\d+)*\s*\]", "a reference number like [12]"),
@@ -138,9 +147,15 @@ class PaperTools:
 
     # ---------------------------------------------------------------- tools
     def search_text(self, keyword: str, max_hits: int = 8) -> dict:
-        """Return sentences that contain the keyword (case-insensitive)."""
-        sentences = re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", self.text))
-        hits = [s.strip() for s in sentences if keyword.lower() in s.lower()]
+        """Return sentences that contain the keyword. Ignores case and the way PDFs write dashes,
+        ligatures and soft hyphens ("Pt-CNU20" finds "Pt–CNU20"); if nothing is found, spaces are
+        ignored too ("C3N4" finds "C3 N4")."""
+        sentences = [x.strip() for x in re.split(r"(?<=[.!?])\s+", re.sub(r"\s+", " ", self.text))]
+        key = _search_normalize(keyword)
+        hits = [x for x in sentences if key in _search_normalize(x)]
+        if not hits:
+            key_nospace = key.replace(" ", "")
+            hits = [x for x in sentences if key_nospace in _search_normalize(x).replace(" ", "")]
         return {"keyword": keyword, "n_hits": len(hits), "sentences": hits[:max_hits]}
 
     def check_evidence(self, quote: str) -> dict:

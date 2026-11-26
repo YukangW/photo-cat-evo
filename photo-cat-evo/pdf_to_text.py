@@ -136,7 +136,7 @@ def convert(main_pdf: str, si_pdf: str | None = None) -> tuple[str, int]:
     text = clean(remove_references(text))
     if si_pdf:
         si, n_si = pdf_to_text(si_pdf)
-        text += "\n\n===== SUPPORTING INFORMATION =====\n\n" + clean(si)
+        text += "SUPPORTING INFORMATION" + clean(si)
         n += n_si
     return text, n
 

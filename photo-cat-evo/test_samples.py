@@ -127,3 +127,27 @@ def test_llm_failure_marks_item_failed_and_keeps_going(monkeypatch, tmp_path):
     final = agent.run_agent(PAPER, "p", "band gap and BET", params={})
     assert [(r["item"], r["status"]) for r in final["results"]] == [("band gap", "failed"),
                                                                     ("BET surface area", "verified")]
+
+
+# ------------------------------------------------------------ search and step budget
+def test_search_ignores_dash_style_and_spaces():
+    t = PaperTools("When the Pt content was 0.5 wt%, Pt–CNU20 exhibited the highest rate. "
+                   "The g-C3 N4 sample was prepared from urea.", BAND_GAP, {})
+    assert t.search_text("Pt-CNU20")["n_hits"] == 1          # hyphen finds the en dash
+    assert t.search_text("g-C3N4")["n_hits"] == 1            # finds the PDF's split "C3 N4"
+
+
+def test_agent_is_told_to_save_before_running_out_of_steps(monkeypatch, tmp_path):
+    monkeypatch.setattr(agent, "RESULTS_DIR", str(tmp_path))
+    q = "the Eg of 3NBCN and GCN is 2.70 eV and 2.75 eV, respectively."
+    searches = [_msg(_Call("search_text", {"keyword": f"word{i}"})) for i in range(agent.MAX_STEPS - 1)]
+    replies = [_msg(_Call("set_targets", {"targets": [{"name": "band gap"}]}))] + searches + [
+        _msg(_Call("save_result", {"value": 2.70, "unit": "eV", "sample_name": "3NBCN", "evidence": q}))]
+    chat = _fake_chat(replies)
+    monkeypatch.setattr(agent, "chat", chat)
+
+    final = agent.run_agent(PAPER, "p", "band gap", params={})
+
+    assert final["results"][0]["status"] == "verified"       # saved on the very last step
+    last_prompt = chat.sent[-1][-1]["content"]
+    assert "Only 1 step left" in last_prompt and "call save_result NOW" in last_prompt
