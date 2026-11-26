@@ -16,22 +16,30 @@ Usage:
     uv run PhotoCatEvo papers/paper_001.pdf "..." --si papers/paper_001_SI.pdf
     uv run PhotoCatEvo text/paper_001.txt "..."          # already-converted text also works
     uv run PhotoCatEvo papers/paper_001.pdf              # no prompt -> DEFAULT_PROMPT in config.py (bandgap)
+    uv run PhotoCatEvo papers/collected "..."            # recursively extract PDFs and TXTs, then summarize
+    uv run PhotoCatEvo papers/collected "..." --output-dir custom_results
 Output:
     results/paper_001_extraction.json        results for each data item and sample
     results/paper_001_extraction.csv         the same as a table: item, value, range, error, unit,
                                              standard_value/_range/_error/_unit, sample, ...
     results/paper_001_extraction_trace.json  the plan, tool calls and extraction metrics
+    results/cost_metrics.csv                extraction time and tokens by paper and parameter (directory mode)
 """
 import argparse
 import csv
 import json
 import os
 import re
+import sys
+from pathlib import Path
+from shutil import copyfile
+from tempfile import TemporaryDirectory
 from time import perf_counter
 
 from .config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
                      USE_PROMPT_CACHE)
 from .llm import TokenUsage, chat
+from .organize import organize
 from .parameters import describe_for_extractor, describe_for_planner, find_parameter, load_parameters
 from .standardise import standardise
 from .tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
@@ -402,7 +410,7 @@ def standardise_results(paper_text: str, prompt: str, results: list[dict], param
 
 
 def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
-              params: dict | None = None, doi: str | None = None) -> dict:
+              params: dict | None = None, doi: str | None = None, *, output_prefix: Path | None = None) -> dict:
     params = load_parameters() if params is None else params
     doi = doi or find_doi(paper_text)
     print(f"DOI: {doi or 'not found in the text (give it with --doi)'}")
@@ -446,14 +454,15 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
     final = {"paper": paper_name, "doi": doi, "model": MODEL, "prompt": prompt,
              "samples": known_samples, "results": results}
 
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    with open(os.path.join(RESULTS_DIR, f"{paper_name}_extraction.json"), "w", encoding="utf-8") as f:
+    output_prefix = output_prefix or Path(RESULTS_DIR) / paper_name
+    output_prefix.parent.mkdir(parents=True, exist_ok=True)
+    with open(f"{output_prefix}_extraction.json", "w", encoding="utf-8") as f:
         json.dump(final, f, indent=2, ensure_ascii=False)
-    _write_csv(os.path.join(RESULTS_DIR, f"{paper_name}_extraction.csv"), results)
-    with open(os.path.join(RESULTS_DIR, f"{paper_name}_extraction_trace.json"), "w", encoding="utf-8") as f:
+    with open(f"{output_prefix}_extraction_trace.json", "w", encoding="utf-8") as f:
         json.dump({"plan": {"targets": targets, "trace": plan_trace}, "items": item_traces + extra_traces,
                    "metrics": metrics},
                   f, indent=2, ensure_ascii=False)
+    _write_csv(f"{output_prefix}_extraction.csv", results)
 
     print("\nEXTRACTION METRICS")
     print(f"  Whole paper: {metrics['parameters_attempted']} parameters attempted, "
@@ -467,37 +476,113 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
     return final
 
 
-def load_paper(path: str, si_path: str | None = None) -> tuple[str, str]:
-    """Return (text, name). PDFs are converted with pdf_to_text.py and the text saved in text/."""
+def load_paper(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str]:
+    """Return (text, name), optionally saving converted PDF text in text/."""
     name = os.path.splitext(os.path.basename(path))[0]
     if path.lower().endswith(".pdf"):
         from .pdf_to_text import convert          # needs pymupdf, only imported for PDFs
         text, n_tables = convert(path, si_path)
         print(f"Converted PDF: {n_tables} tables found")
-        os.makedirs(TEXT_DIR, exist_ok=True)
-        with open(os.path.join(TEXT_DIR, f"{name}.txt"), "w", encoding="utf-8") as f:
-            f.write(text)
+        if save_text:
+            os.makedirs(TEXT_DIR, exist_ok=True)
+            with open(os.path.join(TEXT_DIR, f"{name}.txt"), "w", encoding="utf-8") as f:
+                f.write(text)
     else:
         with open(path, encoding="utf-8") as f:
             text = f.read()
     return text, name
 
 
+def _cost_rows(paper_name: str, trace: dict) -> list[tuple]:
+    entries = [("paper", "", trace["metrics"])]
+    entries.extend(("parameter", item["item"], item["metrics"]) for item in trace["items"])
+    rows = []
+    for scope, parameter, metrics in entries:
+        usage = metrics["token_usage"]
+        rows.append((paper_name, scope, parameter, metrics["elapsed_seconds"],
+                     usage["prompt_tokens"], usage["completion_tokens"], usage["total_tokens"]))
+    return rows
+
+
+def _run_directory(folder: Path, prompt: str, results_dir: Path) -> None:
+    if results_dir.resolve() == folder.resolve():
+        raise SystemExit("The output directory must differ from the input directory, since paper filenames become directories.")
+
+    papers = sorted(path for path in folder.rglob("*") if path.suffix.lower() in {".pdf", ".txt"} and path.is_file())
+    if not papers:
+        raise SystemExit(f"No PDF or TXT files found in '{folder}'.")
+
+    results_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Model: {MODEL}\nResults directory: {results_dir}")
+    failed = 0
+    cost_rows = []
+    with TemporaryDirectory(dir=results_dir) as temp_dir:
+        batch_dir = Path(temp_dir)
+        output_prefix = batch_dir / "work" / "paper"
+        for index, path in enumerate(papers, start=1):
+            relative_path = path.relative_to(folder)
+            paper_name = relative_path.as_posix()
+            paper_dir = results_dir / relative_path
+            batch_csv = batch_dir / f"{index:04d}_extraction.csv"
+            print(f"\n[{index}/{len(papers)}] {paper_name}")
+            try:
+                text, _ = load_paper(str(path), save_text=False)
+                run_agent(text, paper_name, prompt, output_prefix=output_prefix)
+                with open(f"{output_prefix}_extraction_trace.json", encoding="utf-8") as trace_file:
+                    paper_cost_rows = _cost_rows(paper_name, json.load(trace_file))
+                paper_dir.mkdir(parents=True, exist_ok=True)
+                copyfile(f"{output_prefix}_extraction.csv", batch_csv)
+                for suffix in ("_extraction.json", "_extraction_trace.json", "_extraction.csv"):
+                    Path(f"{output_prefix}{suffix}").replace(paper_dir / f"{path.stem}{suffix}")
+                cost_rows.extend(paper_cost_rows)
+            except Exception as exc:
+                batch_csv.unlink(missing_ok=True)
+                print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
+                failed += 1
+
+        if failed == len(papers):
+            raise SystemExit(f"All {failed} papers failed.")
+
+        summary = Path(organize(str(batch_dir)))
+        cost_csv = batch_dir / "cost_metrics.csv"
+        with cost_csv.open("w", encoding="utf-8-sig", newline="") as cost_file:
+            writer = csv.writer(cost_file)
+            writer.writerow(("paper", "scope", "parameter", "elapsed_seconds",
+                             "prompt_tokens", "completion_tokens", "total_tokens"))
+            writer.writerows(cost_rows)
+        summary = summary.replace(results_dir / summary.name)
+        cost_report = cost_csv.replace(results_dir / cost_csv.name)
+    print(f"Batch summary: {summary}")
+    print(f"Cost metrics: {cost_report}")
+    if failed:
+        raise SystemExit(f"{failed} of {len(papers)} papers failed.")
+
+
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Extract the data asked for in a prompt from one paper.",
+    parser = argparse.ArgumentParser(description="Extract data from one paper or a directory of papers.",
                                      epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("paper", help="Paper PDF (or a .txt made by pdf_to_text.py)")
+    parser.add_argument("paper", help="A PDF, a TXT, or a directory to search recursively for both")
     parser.add_argument("prompt", nargs="?", default=DEFAULT_PROMPT, help="What data to extract")
     parser.add_argument("--si", help="Supporting Information PDF (optional)")
     parser.add_argument("--doi", help="The paper's DOI, if it is not found in the text automatically")
+    parser.add_argument("--output-dir", type=Path, default=Path(RESULTS_DIR),
+                        help="Directory for extraction results and the batch summary (default: %(default)s)")
     args = parser.parse_args(argv)
+
+    paper_path = Path(args.paper)
+    if paper_path.is_dir():
+        if args.si is not None or args.doi is not None:
+            parser.error("--si and --doi apply to a single paper only")
+        _run_directory(paper_path, args.prompt, args.output_dir)
+        return
 
     text, name = load_paper(args.paper, args.si)
     print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
-    final = run_agent(text, name, args.prompt, doi=args.doi)
+    output_prefix = args.output_dir / name
+    final = run_agent(text, name, args.prompt, doi=args.doi, output_prefix=output_prefix)
     print("\nFINAL RESULTS:")
     _print_table(final["results"])
-    print(f"\nFull results (with evidence quotes): {RESULTS_DIR}/{name}_extraction.json and .csv")
+    print(f"\nFull results (with evidence quotes): {output_prefix}_extraction.json and .csv")
 
 
 if __name__ == "__main__":
