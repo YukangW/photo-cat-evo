@@ -1,7 +1,8 @@
 """
 Combine the extraction results of many papers into ONE table: one row per sample, one column per parameter.
 
-Input:  a folder with results/<paper>_extraction.csv files (made by `uv run PhotoCatEvo ...`)
+Input:  a folder with <paper>_extraction.csv files (made by `uv run PhotoCatEvo ...`), searched in its
+        subfolders too (a batch run puts each paper in results/<paper file>/); --no-recursive: top folder only
 Output: one CSV with
     paper | doi | sample_name | <parameter> | <parameter>_unit | <next parameter> | ...
 A parameter that never has a unit (e.g. C:N ratio, or text such as the atmosphere) gets no _unit column.
@@ -17,6 +18,7 @@ Usage:
     uv run PhotoCatEvo-table results/
     uv run PhotoCatEvo-table results/ -o results/all_samples.csv
     uv run PhotoCatEvo-table results/ --with-source      # also a <parameter>_source column
+    uv run PhotoCatEvo-table results/ --no-recursive     # ignore the subfolders
 """
 import argparse
 import csv
@@ -79,19 +81,28 @@ def cell_value(row: dict) -> tuple[object, str, str]:
     return None, "", ""
 
 
-def organize(folder: str, out_csv: str | None = None, with_source: bool = False) -> str:
-    files = sorted(glob.glob(os.path.join(folder, "*_extraction.csv")))
+def find_result_files(folder: str, recursive: bool = True) -> list[str]:
+    """All *_extraction.csv files in the folder (and its subfolders, unless recursive=False)."""
+    pattern = os.path.join(folder, "**", "*_extraction.csv") if recursive else os.path.join(folder, "*_extraction.csv")
+    return sorted(glob.glob(pattern, recursive=recursive))
+
+
+def organize(folder: str, out_csv: str | None = None, with_source: bool = False, recursive: bool = True) -> str:
+    files = find_result_files(folder, recursive)
     if not files:
-        raise SystemExit(f"No *_extraction.csv files in '{folder}'.")
+        where = "or its subfolders " if recursive else ""
+        raise SystemExit(f"No *_extraction.csv files in '{folder}' {where}".rstrip() + ".")
     out_csv = out_csv or os.path.join(folder, "all_samples.csv")
 
     samples, parameters, conflicts = {}, [], []
+    files_of_paper = {}                                  # paper -> files it was read from
     for fn in files:
         with open(fn, encoding="utf-8-sig") as f:
             for r in csv.DictReader(f):
                 if r.get("status") not in KEEP or not (r.get("sample_name") or "").strip():
                     continue
                 paper = r.get("paper") or os.path.basename(fn).replace("_extraction.csv", "")
+                files_of_paper.setdefault(paper, set()).add(fn)
                 name = r.get("item") or r.get("parameter")
                 value, unit, source = cell_value(r)
                 if value is None:
@@ -126,6 +137,10 @@ def organize(folder: str, out_csv: str | None = None, with_source: bool = False)
     print(f"Read {len(files)} file(s) -> {out_csv}")
     print(f"  {len(rows)} samples from {len({r['paper'] for r in rows})} papers, {len(parameters)} parameters: "
           + ", ".join(parameters))
+    for paper, fns in sorted(files_of_paper.items()):
+        if len(fns) > 1:
+            print(f"  Warning: paper '{paper}' is in {len(fns)} files ({', '.join(sorted(fns))}); their values "
+                  f"were combined (first value kept). Remove old runs or give a narrower folder.")
     for c in conflicts:
         print(f"  Note: {c}")
     return out_csv
@@ -135,12 +150,14 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="One table for all papers: one row per sample, "
                                                  "one column per parameter.",
                                      epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("folder", help="Folder with the *_extraction.csv files (e.g. results/)")
+    parser.add_argument("folder", help="Folder with the *_extraction.csv files (e.g. results/), "
+                                       "subfolders included")
     parser.add_argument("-o", "--output", help="Output CSV (default: <folder>/all_samples.csv)")
     parser.add_argument("--with-source", action="store_true",
                         help="Add a <parameter>_source column: value, range average, bound, text")
+    parser.add_argument("--no-recursive", action="store_true", help="Only the folder itself, not its subfolders")
     args = parser.parse_args(argv)
-    organize(args.folder, args.output, args.with_source)
+    organize(args.folder, args.output, args.with_source, recursive=not args.no_recursive)
 
 
 if __name__ == "__main__":

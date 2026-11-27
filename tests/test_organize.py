@@ -59,6 +59,8 @@ def test_organize_one_row_per_sample(tmp_path):
         {"paper": "paper_021", "doi": "10.1016/j.carbon.2024.118841", "item": "BET surface area",
          "sample_name": "CNU 20", "is_main": "yes", "range": ">160", "unit": "m2 g-1", "standard_range": ">160",
          "standard_unit": "m2 g-1", "status": "range_only"},                         # same sample, other spelling
+        {"paper": "paper_021", "item": "C:N ratio", "sample_name": "CNU20", "is_main": "yes", "value": "1.77",
+         "standard_value": "1.77", "status": "verified"},                             # dimensionless
         {"paper": "paper_021", "item": "heating time", "status": "not_reported"},     # skipped
     ])
     _write(tmp_path / "paper_022_extraction.csv", [
@@ -71,12 +73,15 @@ def test_organize_one_row_per_sample(tmp_path):
     out = organize(str(tmp_path), str(tmp_path / "all.csv"), with_source=True)
     rows = _read(out)
 
-    assert list(rows[0].keys())[:8] == ["paper", "doi", "sample_name", "is_main",
+    assert list(rows[0].keys())[:7] == ["paper", "doi", "sample_name",
                                         "band gap", "band gap_unit", "band gap_source", "BET surface area"]
+    assert "is_main" not in rows[0]
+    assert "atmosphere" in rows[0] and "atmosphere_unit" not in rows[0]      # text: no unit column
+    assert "C:N ratio" in rows[0] and "C:N ratio_unit" not in rows[0]        # dimensionless: no unit column
     table = {(r["paper"], r["sample_name"]): r for r in rows}
     assert len(rows) == 3
     cnu = table[("paper_021", "CNU20")]
-    assert (cnu["band gap"], cnu["band gap_unit"], cnu["is_main"]) == ("2.33", "eV", "yes")
+    assert (cnu["band gap"], cnu["band gap_unit"], cnu["C:N ratio"]) == ("2.33", "eV", "1.77")
     assert (cnu["BET surface area"], cnu["BET surface area_source"]) == ("160.0", "bound")
     assert table[("paper_021", "g-C3N4")]["BET surface area"] == ""       # not reported for this sample
     tio2 = table[("paper_022", "TiO2-500")]
@@ -87,3 +92,33 @@ def test_organize_one_row_per_sample(tmp_path):
 def test_organize_needs_files(tmp_path):
     with pytest.raises(SystemExit):
         organize(str(tmp_path))
+
+
+def test_organize_finds_csvs_in_subfolders(tmp_path):
+    a = tmp_path / "batch1" / "paper_021.pdf"
+    b = tmp_path / "batch2" / "sub" / "paper_022.pdf"
+    a.mkdir(parents=True)
+    b.mkdir(parents=True)
+    _write(a / "paper_021_extraction.csv", [
+        {"paper": "paper_021.pdf", "doi": "10.1/a", "item": "band gap", "sample_name": "CNU20", "is_main": "yes",
+         "value": "2.33", "unit": "eV", "standard_value": "2.33", "standard_unit": "eV", "status": "verified"}])
+    _write(b / "paper_022_extraction.csv", [
+        {"paper": "sub/paper_022.pdf", "doi": "10.1/b", "item": "band gap", "sample_name": "TiO2", "is_main": "yes",
+         "value": "3.1", "unit": "eV", "standard_value": "3.1", "standard_unit": "eV", "status": "verified"}])
+    rows = _read(organize(str(tmp_path), str(tmp_path / "all.csv")))
+    assert sorted(r["sample_name"] for r in rows) == ["CNU20", "TiO2"]
+    with pytest.raises(SystemExit):                                  # top folder only: nothing there
+        organize(str(tmp_path), str(tmp_path / "x.csv"), recursive=False)
+
+
+def test_organize_warns_when_a_paper_is_in_two_files(tmp_path, capsys):
+    for run in ("run1", "run2"):
+        d = tmp_path / run
+        d.mkdir()
+        _write(d / "p_extraction.csv", [
+            {"paper": "p", "doi": "10.1/a", "item": "band gap", "sample_name": "CN", "is_main": "yes",
+             "value": "2.7" if run == "run1" else "2.8", "unit": "eV", "status": "verified"}])
+    rows = _read(organize(str(tmp_path), str(tmp_path / "all.csv")))
+    assert len(rows) == 1 and rows[0]["band gap"] == "2.7"            # first file wins
+    out = capsys.readouterr().out
+    assert "is in 2 files" in out and "kept 2.7, ignored 2.8" in out
