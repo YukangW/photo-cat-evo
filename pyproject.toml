@@ -11,6 +11,9 @@ dependencies = [
     "requests>=2.31",
 ]
 
+[project.optional-dependencies]
+api = ["fastapi>=0.115", "python-multipart>=0.0.20", "uvicorn>=0.34"]
+
 [project.scripts]
 PhotoCatEvo = "PhotoCatEvo.agent:main"
 PhotoCatEvo-table = "PhotoCatEvo.organize:main"

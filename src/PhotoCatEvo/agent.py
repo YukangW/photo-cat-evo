@@ -32,7 +32,9 @@ import json
 import os
 import re
 import sys
+from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from dataclasses import dataclass
 from pathlib import Path
 from shutil import copyfile
 from tempfile import TemporaryDirectory
@@ -48,6 +50,17 @@ from .tools import PLAN_TOOLS, TOOLS, PaperTools, PlanTools
 from .units import UnitError, convert
 
 _EXTRACTED_STATUSES = {"verified", "range_only"}
+
+
+@dataclass(frozen=True)
+class PaperProgress:
+    stage: str
+    completed: int | None = None
+    total: int | None = None
+    rows: list[dict] | None = None
+    result_path: Path | None = None
+    error: str | None = None
+
 
 PLANNER_PROMPT = """You turn a user's data-extraction request into a list of separate data items.
 
@@ -413,11 +426,14 @@ def standardise_results(paper_text: str, prompt: str, results: list[dict], param
 
 def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
               params: dict | None = None, doi: str | None = None, *, output_prefix: Path | None = None,
-              pdf_conversion_elapsed: float = 0.0) -> dict:
+              pdf_conversion_elapsed: float = 0.0,
+              on_progress: Callable[[PaperProgress], None] | None = None) -> dict:
     params = load_parameters() if params is None else params
     doi = doi or find_doi(paper_text)
     print(f"DOI: {doi or 'not found in the text (give it with --doi)'}")
     print(f"Request: {prompt}\nParameter dictionary: {len(params)} entries\n\nPlanning...")
+    if on_progress:
+        on_progress(PaperProgress("planning"))
     paper_usage = TokenUsage()
     planning_started = perf_counter()
     targets, plan_trace = plan_targets(prompt, params, token_usage=paper_usage)
@@ -432,6 +448,8 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
                     f"range check (add it with: uv run python -m PhotoCatEvo.parameters add ...)")
 
     results, item_traces, done_so_far, known_samples = [], [], [], []
+    if on_progress:
+        on_progress(PaperProgress("extracting", completed=0, total=len(targets)))
     for i, target in enumerate(targets, 1):
         print(f"\n[{i}/{len(targets)}] {_describe(target)}")
         result, trace, item_metrics = _extract_with_metrics(paper_text, target, prompt, done_so_far, params,
@@ -441,11 +459,15 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
         item_traces.append({"item": target["name"], "trace": trace, "metrics": item_metrics})
         done_so_far.append(_summary(target, result))
         known_samples += [n for n in _sample_names(result) if n not in known_samples]
+        if on_progress:
+            on_progress(PaperProgress("extracting", completed=i, total=len(targets), rows=results.copy()))
     planning_and_extraction_elapsed = perf_counter() - planning_started
 
     extracted_samples = {r["sample_name"] for r in results
                          if r.get("sample_name") and r["status"] in _EXTRACTED_STATUSES}
     print("\nStandardising units...")
+    if on_progress:
+        on_progress(PaperProgress("standardizing", completed=len(targets), total=len(targets)))
     results, extra_traces = standardise_results(paper_text, prompt, results, params, done_so_far,
                                                paper=paper_name, doi=doi, paper_usage=paper_usage)
     supporting_elapsed = sum(item["metrics"]["elapsed_seconds"] for item in extra_traces)
@@ -485,11 +507,11 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
 
 def load_paper(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str]:
     """Return (text, name), optionally saving converted PDF text in text/."""
-    text, name, _ = _load_paper_with_timing(path, si_path, save_text=save_text)
+    text, name, _ = load_paper_with_timing(path, si_path, save_text=save_text)
     return text, name
 
 
-def _load_paper_with_timing(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str, float]:
+def load_paper_with_timing(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str, float]:
     name = os.path.splitext(os.path.basename(path))[0]
     pdf_conversion_elapsed = 0.0
     if path.lower().endswith(".pdf"):
@@ -519,16 +541,19 @@ def _cost_rows(paper_name: str, trace: dict) -> list[tuple]:
     return rows
 
 
-def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 1) -> None:
+def run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 1, *,
+                  on_paper_progress: Callable[[str, PaperProgress], None] | None = None,
+                  on_summarizing: Callable[[], None] | None = None) -> tuple[int, int]:
+    """Process a directory and return the numbers of successful and failed papers."""
     if results_dir.resolve() == folder.resolve():
-        raise SystemExit("The output directory must differ from the input directory, since paper filenames become directories.")
+        raise ValueError("The output directory must differ from the input directory, since paper filenames become directories.")
 
     papers = sorted(
         (path for path in folder.rglob("*") if path.suffix.lower() in {".pdf", ".txt"} and path.is_file()),
         key=Path.as_posix,
     )
     if not papers:
-        raise SystemExit(f"No PDF or TXT files found in '{folder}'.")
+        raise ValueError(f"No PDF or TXT files found in '{folder}'.")
 
     results_dir.mkdir(parents=True, exist_ok=True)
     print(f"Model: {MODEL}\nResults directory: {results_dir}")
@@ -543,13 +568,19 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 
                 relative_path = path.relative_to(folder)
                 paper_name = relative_path.as_posix()
                 print(f"\n[{index}/{len(papers)}] {paper_name}")
+                if on_paper_progress:
+                    on_paper_progress(paper_name, PaperProgress("reading"))
                 try:
-                    text, _, pdf_conversion_elapsed = _load_paper_with_timing(str(path), save_text=False)
+                    text, _, pdf_conversion_elapsed = load_paper_with_timing(str(path), save_text=False)
                 except Exception as exc:
                     print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
+                    if on_paper_progress:
+                        on_paper_progress(paper_name, PaperProgress("failed", error=str(exc)))
                     continue
 
                 output_prefix = batch_dir / "work" / str(index)
+                if on_paper_progress:
+                    on_paper_progress(paper_name, PaperProgress("extracting"))
                 future = pool.submit(run_agent, text, paper_name, prompt, output_prefix=output_prefix,
                                      pdf_conversion_elapsed=pdf_conversion_elapsed)
                 pending[future] = (index, relative_path, output_prefix)
@@ -564,6 +595,7 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 
                 index, relative_path, output_prefix = pending.pop(future)
                 paper_name = relative_path.as_posix()
                 paper_dir = results_dir / relative_path
+                result_path = paper_dir / f"{relative_path.stem}_extraction.json"
                 batch_csv = batch_dir / f"{index:0{index_width}d}_extraction.csv"
                 try:
                     future.result()
@@ -577,12 +609,19 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 
                 except Exception as exc:
                     batch_csv.unlink(missing_ok=True)
                     print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
+                    if on_paper_progress:
+                        on_paper_progress(paper_name, PaperProgress("failed", error=str(exc)))
+                else:
+                    if on_paper_progress:
+                        on_paper_progress(paper_name, PaperProgress("succeeded", result_path=result_path))
 
         failed = len(papers) - len(cost_rows)
         if failed == len(papers):
-            raise SystemExit(f"All {failed} papers failed.")
+            return 0, failed
 
-        summary = Path(organize(str(batch_dir)))
+        if on_summarizing:
+            on_summarizing()
+        summary = Path(organize(str(batch_dir), recursive=False))
         cost_csv = batch_dir / "cost_metrics.csv"
         with cost_csv.open("w", encoding="utf-8-sig", newline="") as cost_file:
             writer = csv.writer(cost_file)
@@ -594,8 +633,7 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 
         cost_report = cost_csv.replace(results_dir / cost_csv.name)
     print(f"Batch summary: {summary}")
     print(f"Cost metrics: {cost_report}")
-    if failed:
-        raise SystemExit(f"{failed} of {len(papers)} papers failed.")
+    return len(cost_rows), failed
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -617,10 +655,17 @@ def main(argv: list[str] | None = None) -> None:
     if paper_path.is_dir():
         if args.si is not None or args.doi is not None:
             parser.error("--si and --doi apply to a single paper only")
-        _run_directory(paper_path, args.prompt, args.output_dir, args.workers)
+        try:
+            succeeded, failed = run_directory(paper_path, args.prompt, args.output_dir, args.workers)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        if failed and not succeeded:
+            raise SystemExit(f"All {failed} papers failed.")
+        if failed:
+            raise SystemExit(f"{failed} of {succeeded + failed} papers failed.")
         return
 
-    text, name, pdf_conversion_elapsed = _load_paper_with_timing(args.paper, args.si)
+    text, name, pdf_conversion_elapsed = load_paper_with_timing(args.paper, args.si)
     print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
     output_prefix = args.output_dir / name
     final = run_agent(text, name, args.prompt, doi=args.doi, output_prefix=output_prefix,

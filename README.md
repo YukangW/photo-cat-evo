@@ -261,3 +261,37 @@ A paper without references is ~10k–25k tokens, so `--max-model-len` should be 
 - Look at the trace: did the planner split the prompt sensibly? Did each run search well and pick the right sample?
 - Tune `SYSTEM_PROMPT` in `agent.py` (e.g. which sample counts as "main") and `PLANNER_PROMPT` (how prompts are split).
 - Add new quantities to `src/PhotoCatEvo/parameters.json` (or run `uv run python -m PhotoCatEvo.parameters add ...`), or improve the notes and search terms of existing ones.
+
+## FastAPI service
+
+Start the API from the repository root. Port 8001 leaves port 8000 available for local vLLM.
+Set the same LLM environment variables as for the CLI, or add `--env-file .env` before `uvicorn`.
+
+```bash
+uv run --locked --extra api uvicorn PhotoCatEvo.api:app --host 127.0.0.1 --port 8001
+```
+
+Open `http://127.0.0.1:8001/docs` to try the endpoints.
+
+- `GET /health` returns HTTP 200 with `{"status":"ok"}` when the API can respond.
+- `POST /api/extractions` accepts multipart form data and returns HTTP 202 with `job_id` and `status_url`.
+  Single mode accepts one `files` part with a PDF or TXT, and an optional `si` PDF for a PDF paper.
+  Directory mode requires `mode=directory` and one `relative_paths` part per `files` part, in the same order.
+  Both modes accept an optional `prompt`.
+- `GET /api/extractions/{job_id}` returns job and per-paper progress. A single paper's result is included
+  as it becomes available. For directory jobs, add `?paper_id=<id>` to read a completed paper's results.
+  Stop polling on `succeeded`, `partial_success`, `failed`, or `interrupted`.
+
+```bash
+curl -F 'files=@paper.pdf' -F 'prompt=Find the band gap' http://127.0.0.1:8001/api/extractions
+curl -F 'mode=directory' -F 'files=@papers/a.pdf' -F 'files=@papers/sub/b.pdf' \
+     -F 'relative_paths=papers/a.pdf' -F 'relative_paths=papers/sub/b.pdf' \
+     http://127.0.0.1:8001/api/extractions
+```
+
+Run one Uvicorn worker. Set `PHOTOCATEVO_WORKERS` to control the number of papers extracted in parallel
+within a directory job (default 1). The database and job files live in `.photocatevo/` by default.
+Set `PHOTOCATEVO_DATA_DIR` to put them elsewhere. Each job keeps its extraction files under
+`jobs/<job_id>/output/`, along with `all_samples.csv` and `cost_metrics.csv` for directory jobs
+with successful papers. A normal shutdown waits for the active job. After an unexpected stop,
+queued jobs run on the next start, and interrupted jobs retain their completed results.

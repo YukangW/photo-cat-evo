@@ -10,6 +10,7 @@ __pycache__/
 /results/
 /text/
 /papers/
+/.photocatevo/
 
 # Journal lookup cache from collect_papers
 .cache/
