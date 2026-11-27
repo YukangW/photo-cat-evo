@@ -18,6 +18,7 @@ Usage:
     uv run PhotoCatEvo papers/paper_001.pdf              # no prompt -> DEFAULT_PROMPT in config.py (bandgap)
     uv run PhotoCatEvo papers/collected "..."            # recursively extract PDFs and TXTs, then summarize
     uv run PhotoCatEvo papers/collected "..." --output-dir custom_results
+    uv run PhotoCatEvo papers/collected "..." --workers 5
 Output:
     results/paper_001_extraction.json        results for each data item and sample
     results/paper_001_extraction.csv         the same as a table: item, value, range, error, unit,
@@ -31,6 +32,7 @@ import json
 import os
 import re
 import sys
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 from shutil import copyfile
 from tempfile import TemporaryDirectory
@@ -504,42 +506,65 @@ def _cost_rows(paper_name: str, trace: dict) -> list[tuple]:
     return rows
 
 
-def _run_directory(folder: Path, prompt: str, results_dir: Path) -> None:
+def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 1) -> None:
     if results_dir.resolve() == folder.resolve():
         raise SystemExit("The output directory must differ from the input directory, since paper filenames become directories.")
 
-    papers = sorted(path for path in folder.rglob("*") if path.suffix.lower() in {".pdf", ".txt"} and path.is_file())
+    papers = sorted(
+        (path for path in folder.rglob("*") if path.suffix.lower() in {".pdf", ".txt"} and path.is_file()),
+        key=Path.as_posix,
+    )
     if not papers:
         raise SystemExit(f"No PDF or TXT files found in '{folder}'.")
 
     results_dir.mkdir(parents=True, exist_ok=True)
     print(f"Model: {MODEL}\nResults directory: {results_dir}")
-    failed = 0
-    cost_rows = []
-    with TemporaryDirectory(dir=results_dir) as temp_dir:
+    cost_rows = {}
+    index_width = max(4, len(str(len(papers))))
+    inputs = iter(enumerate(papers, start=1))
+    with TemporaryDirectory(dir=results_dir) as temp_dir, ThreadPoolExecutor(max_workers=workers) as pool:
         batch_dir = Path(temp_dir)
-        output_prefix = batch_dir / "work" / "paper"
-        for index, path in enumerate(papers, start=1):
-            relative_path = path.relative_to(folder)
-            paper_name = relative_path.as_posix()
-            paper_dir = results_dir / relative_path
-            batch_csv = batch_dir / f"{index:04d}_extraction.csv"
-            print(f"\n[{index}/{len(papers)}] {paper_name}")
-            try:
-                text, _ = load_paper(str(path), save_text=False)
-                run_agent(text, paper_name, prompt, output_prefix=output_prefix)
-                with open(f"{output_prefix}_extraction_trace.json", encoding="utf-8") as trace_file:
-                    paper_cost_rows = _cost_rows(paper_name, json.load(trace_file))
-                paper_dir.mkdir(parents=True, exist_ok=True)
-                copyfile(f"{output_prefix}_extraction.csv", batch_csv)
-                for suffix in ("_extraction.json", "_extraction_trace.json", "_extraction.csv"):
-                    Path(f"{output_prefix}{suffix}").replace(paper_dir / f"{path.stem}{suffix}")
-                cost_rows.extend(paper_cost_rows)
-            except Exception as exc:
-                batch_csv.unlink(missing_ok=True)
-                print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
-                failed += 1
+        pending = {}
+        while True:
+            for index, path in inputs:
+                relative_path = path.relative_to(folder)
+                paper_name = relative_path.as_posix()
+                print(f"\n[{index}/{len(papers)}] {paper_name}")
+                try:
+                    text, _ = load_paper(str(path), save_text=False)
+                except Exception as exc:
+                    print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
+                    continue
 
+                output_prefix = batch_dir / "work" / str(index)
+                future = pool.submit(run_agent, text, paper_name, prompt, output_prefix=output_prefix)
+                pending[future] = (index, relative_path, output_prefix)
+                if len(pending) == workers:
+                    break
+
+            if not pending:
+                break
+
+            completed, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in completed:
+                index, relative_path, output_prefix = pending.pop(future)
+                paper_name = relative_path.as_posix()
+                paper_dir = results_dir / relative_path
+                batch_csv = batch_dir / f"{index:0{index_width}d}_extraction.csv"
+                try:
+                    future.result()
+                    with open(f"{output_prefix}_extraction_trace.json", encoding="utf-8") as trace_file:
+                        paper_cost_rows = _cost_rows(paper_name, json.load(trace_file))
+                    paper_dir.mkdir(parents=True, exist_ok=True)
+                    copyfile(f"{output_prefix}_extraction.csv", batch_csv)
+                    for suffix in ("_extraction.json", "_extraction_trace.json", "_extraction.csv"):
+                        Path(f"{output_prefix}{suffix}").replace(paper_dir / f"{relative_path.stem}{suffix}")
+                    cost_rows[index] = paper_cost_rows
+                except Exception as exc:
+                    batch_csv.unlink(missing_ok=True)
+                    print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
+
+        failed = len(papers) - len(cost_rows)
         if failed == len(papers):
             raise SystemExit(f"All {failed} papers failed.")
 
@@ -549,7 +574,8 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path) -> None:
             writer = csv.writer(cost_file)
             writer.writerow(("paper", "scope", "parameter", "elapsed_seconds",
                              "prompt_tokens", "completion_tokens", "total_tokens"))
-            writer.writerows(cost_rows)
+            for index in sorted(cost_rows):
+                writer.writerows(cost_rows[index])
         summary = summary.replace(results_dir / summary.name)
         cost_report = cost_csv.replace(results_dir / cost_csv.name)
     print(f"Batch summary: {summary}")
@@ -567,13 +593,17 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--doi", help="The paper's DOI, if it is not found in the text automatically")
     parser.add_argument("--output-dir", type=Path, default=Path(RESULTS_DIR),
                         help="Directory for extraction results and the batch summary (default: %(default)s)")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="Maximum papers to extract concurrently in directory mode (default: %(default)s)")
     args = parser.parse_args(argv)
+    if args.workers < 1:
+        parser.error("--workers must be at least 1")
 
     paper_path = Path(args.paper)
     if paper_path.is_dir():
         if args.si is not None or args.doi is not None:
             parser.error("--si and --doi apply to a single paper only")
-        _run_directory(paper_path, args.prompt, args.output_dir)
+        _run_directory(paper_path, args.prompt, args.output_dir, args.workers)
         return
 
     text, name = load_paper(args.paper, args.si)

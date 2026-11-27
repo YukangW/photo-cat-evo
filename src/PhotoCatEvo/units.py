@@ -19,11 +19,14 @@ are in conversions.py; standardise.py puts it all together for one extracted res
 """
 import re
 from collections.abc import Callable, Iterable
+from threading import RLock
 
 import pint
 
 ureg = pint.UnitRegistry()
 ureg.formatter.default_format = "~P"           # short, pretty: "µmol/g/h", "m²/kg"
+# Pint keeps active conversion contexts on the shared registry.
+_ureg_lock = RLock()
 
 # Custom context: band potentials are often written "1.94 eV vs. NHE" = energy per electron, i.e. 1.94 V.
 _electron = pint.Context("electron")
@@ -60,10 +63,12 @@ def parse_unit(unit: str) -> pint.Unit:
     if not tokens:
         if u.strip():
             raise UnitError(f"Cannot read the unit '{raw}'.")
-        return ureg.dimensionless
+        with _ureg_lock:
+            return ureg.dimensionless
     expr = " * ".join(f"{base}**{exp}" if exp else base for base, exp in tokens)
     try:
-        return ureg.Unit(expr)
+        with _ureg_lock:
+            return ureg.Unit(expr)
     except (pint.UndefinedUnitError, pint.DefinitionSyntaxError, AttributeError, ValueError, TypeError) as e:
         raise UnitError(f"Cannot read the unit '{raw}' ({e}).") from e
 
@@ -75,12 +80,14 @@ def strip_reference(unit: str) -> str:
 
 def same_kind(a: str, b: str) -> bool:
     """Do two units measure the same kind of thing (plain conversion possible)?"""
-    return parse_unit(a).dimensionality == parse_unit(b).dimensionality
+    with _ureg_lock:
+        return parse_unit(a).dimensionality == parse_unit(b).dimensionality
 
 
 def si_unit(unit: str) -> str:
     """The SI base unit for the same kind of quantity: 'ns' -> 's', 'm2 g-1' -> 'm²/kg'."""
-    return f"{ureg.Quantity(1, parse_unit(unit)).to_base_units().units}"
+    with _ureg_lock:
+        return f"{ureg.Quantity(1, parse_unit(unit)).to_base_units().units}"
 
 
 # ============================================================ converting one value
@@ -101,22 +108,23 @@ def convert(value: float, from_unit: str, to_unit: str, contexts: Iterable[str] 
     """Convert a value between two units written the way papers write them.
     A plain conversion is tried first; the contexts (e.g. ["spectroscopy"]) only if that is impossible."""
     contexts = _check_contexts(contexts)
-    q = ureg.Quantity(float(value), parse_unit(from_unit))
-    target = parse_unit(to_unit)
-    try:
-        return _round(q.to(target).magnitude)
-    except pint.DimensionalityError as e:
-        if not contexts:
-            raise UnitError(f"Cannot convert '{from_unit}' to '{to_unit}': they measure different things "
-                            f"({e.dim1} vs {e.dim2}).") from e
-    try:
-        with ureg.context(*contexts):
+    with _ureg_lock:
+        q = ureg.Quantity(float(value), parse_unit(from_unit))
+        target = parse_unit(to_unit)
+        try:
             return _round(q.to(target).magnitude)
-    except pint.DimensionalityError as e:
-        raise UnitError(f"Cannot convert '{from_unit}' to '{to_unit}', even with the "
-                        f"{'/'.join(contexts)} context.") from e
-    except ZeroDivisionError as e:
-        raise UnitError(f"{value} {from_unit} has no equivalent in {to_unit} (division by zero).") from e
+        except pint.DimensionalityError as e:
+            if not contexts:
+                raise UnitError(f"Cannot convert '{from_unit}' to '{to_unit}': they measure different things "
+                                f"({e.dim1} vs {e.dim2}).") from e
+        try:
+            with ureg.context(*contexts):
+                return _round(q.to(target).magnitude)
+        except pint.DimensionalityError as e:
+            raise UnitError(f"Cannot convert '{from_unit}' to '{to_unit}', even with the "
+                            f"{'/'.join(contexts)} context.") from e
+        except ZeroDivisionError as e:
+            raise UnitError(f"{value} {from_unit} has no equivalent in {to_unit} (division by zero).") from e
 
 
 def needs_context(from_unit: str, to_unit: str, contexts: Iterable[str] = ()) -> str | None:
