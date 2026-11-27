@@ -213,8 +213,8 @@ def test_agent_extracts_supporting_values_then_converts(monkeypatch, tmp_path, c
         _msg(_Call("save_result", {"sample_name": "DCN", "value": 6.8, "unit": "", "evidence": "0.5 M Na2SO4 (pH = 6.8)"})),
     ]
     chat = _fake_chat(replies)
-    token_counts = iter([100, 200, 300, 400])
-    clock = iter([10, 11, 13, 14, 17, 18, 30, 34, 36, 41])
+    token_counts = iter([50, 100, 200, 300, 400])
+    clock = iter([4, 10, 11, 13, 14, 17, 18, 30, 34, 36, 41])
 
     def chat_with_usage(messages, tools=None, *, token_usage=None):
         if token_usage is not None:
@@ -248,9 +248,9 @@ def test_agent_extracts_supporting_values_then_converts(monkeypatch, tmp_path, c
 
     trace = json.loads((tmp_path / "p_extraction_trace.json").read_text(encoding="utf-8"))
     assert trace["metrics"] == {
-        "elapsed_seconds": 17, "parameters_attempted": 2, "parameters_extracted": 2, "sample_count": 1,
-        "token_usage": {"prompt_tokens": 1000, "completion_tokens": 100, "total_tokens": 1100,
-                        "requests_with_usage": 4, "requests_without_usage": 0},
+        "elapsed_seconds": 23, "parameters_attempted": 2, "parameters_extracted": 2, "sample_count": 1,
+        "token_usage": {"prompt_tokens": 1050, "completion_tokens": 105, "total_tokens": 1155,
+                        "requests_with_usage": 5, "requests_without_usage": 0},
     }
     assert [(item["item"], item["metrics"]["elapsed_seconds"], item["metrics"]["token_usage"]["total_tokens"])
             for item in trace["items"]] == [
@@ -258,7 +258,7 @@ def test_agent_extracts_supporting_values_then_converts(monkeypatch, tmp_path, c
         ("catalyst mass (supporting)", 4, 330), ("electrolyte pH (supporting)", 5, 440),
     ]
     output = capsys.readouterr().out
-    assert "2 parameters attempted, 2 extracted, 1 samples, 17.00 s, 1,000 input, 100 output, 1,100 total" in output
+    assert "2 parameters attempted, 2 extracted, 1 samples, 23.00 s, 1,050 input, 105 output, 1,155 total" in output
     assert "catalyst mass (supporting) [verified]: 4.00 s, 300 input, 30 output, 330 total tokens" in output
 
 

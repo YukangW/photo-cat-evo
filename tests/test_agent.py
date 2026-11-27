@@ -2,7 +2,10 @@
 
 Run:  python -m pytest test_agent.py -q
 """
+import asyncio
+import csv
 import json
+from contextlib import asynccontextmanager
 from types import SimpleNamespace
 
 import pytest
@@ -101,7 +104,7 @@ def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
         (None, 400, 40),  # usage still counts when the response has no choices
     ])
 
-    def create(**kwargs):
+    async def create(**kwargs):
         reply = next(replies)
         if isinstance(reply, Exception):
             raise reply
@@ -111,8 +114,8 @@ def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
         return SimpleNamespace(choices=[SimpleNamespace(message=message)] if message else [], usage=usage)
 
     sleeps = []
-    clock = iter([10, 11, 16, 17, 20, 21, 22, 23, 25, 26])
-    monkeypatch.setattr(llm.client.chat.completions, "create", create)
+    clock = iter([4, 10, 11, 16, 17, 20, 21, 22, 23, 25, 26])
+    monkeypatch.setattr(llm, "_create_completion", create)
     monkeypatch.setattr(llm, "time", SimpleNamespace(sleep=sleeps.append))
     monkeypatch.setattr(agent, "perf_counter", lambda: next(clock))
     paper_path = tmp_path / "paper.txt"
@@ -123,9 +126,14 @@ def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
     assert sleeps == [5]
     trace = json.loads((tmp_path / "paper_extraction_trace.json").read_text(encoding="utf-8"))
     assert trace["metrics"] == {
-        "elapsed_seconds": 16, "parameters_attempted": 4, "parameters_extracted": 2, "sample_count": 2,
-        "token_usage": {"prompt_tokens": 1000, "completion_tokens": 100, "total_tokens": 1100,
-                        "requests_with_usage": 4, "requests_without_usage": 2},
+        "elapsed_seconds": 22, "parameters_attempted": 4, "parameters_extracted": 2, "sample_count": 2,
+        "token_usage": {"prompt_tokens": 10000, "completion_tokens": 1000, "total_tokens": 11000,
+                        "requests_with_usage": 5, "requests_without_usage": 2},
+    }
+    assert trace["plan"]["metrics"] == {
+        "elapsed_seconds": 6,
+        "token_usage": {"prompt_tokens": 9000, "completion_tokens": 900, "total_tokens": 9900,
+                        "requests_with_usage": 1, "requests_without_usage": 0},
     }
     assert [item["item"] for item in trace["items"]] == [target["name"] for target in targets]
     assert [(item["metrics"]["status"], item["metrics"]["elapsed_seconds"], item["metrics"]["token_usage"])
@@ -140,10 +148,80 @@ def test_extraction_metrics_in_cli_and_trace(monkeypatch, tmp_path, capsys):
                        "requests_with_usage": 1, "requests_without_usage": 0}),
     ]
     output = capsys.readouterr().out
-    assert "4 parameters attempted, 2 extracted, 2 samples, 16.00 s" in output
-    assert "1,000 input, 100 output, 1,100 total tokens (partial, 4/6" in output
+    assert "4 parameters attempted, 2 extracted, 2 samples, 22.00 s" in output
+    assert "10,000 input, 1,000 output, 11,000 total tokens (partial, 5/7" in output
+    assert "Planning: 6.00 s, 9,000 input, 900 output, 9,900 total tokens" in output
     assert "BET surface area [verified]: 5.00 s, 300 input, 30 output, 330 total tokens" in output
     assert "quantum yield [not_reported]: 1.00 s, token usage unavailable" in output
+
+
+def test_llm_total_timeout_cancels_request_before_retry(monkeypatch):
+    events = []
+    message = _msg(content="OK")
+
+    async def create(**kwargs):
+        events.append("request")
+        if len(events) == 1:
+            try:
+                await asyncio.sleep(1)
+            except asyncio.CancelledError:
+                events.append("cancelled")
+                raise
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+    @asynccontextmanager
+    async def client(**kwargs):
+        yield SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    def log(message, *, flush=False):
+        assert flush
+        assert "Total request timeout" in message
+        events.append("printed")
+
+    def sleep(delay):
+        assert delay == 5
+        events.append("waited")
+
+    monkeypatch.setattr(llm, "AsyncOpenAI", client)
+    monkeypatch.setattr(llm, "_REQUEST_TIMEOUT", 0.02)
+    monkeypatch.setattr(llm, "print", log, raising=False)
+    monkeypatch.setattr(llm, "time", SimpleNamespace(sleep=sleep))
+
+    assert llm.chat([{"role": "user", "content": "Test"}], retries=2) is message
+    assert events == ["request", "cancelled", "printed", "waited", "request"]
+
+
+def test_batch_cost_metrics_include_pdf_conversion_and_planning(monkeypatch, tmp_path):
+    from PhotoCatEvo import pdf_to_text
+
+    papers = tmp_path / "papers"
+    papers.mkdir()
+    (papers / "paper.pdf").touch()
+    output = tmp_path / "results"
+    monkeypatch.setattr(pdf_to_text, "convert", lambda path, si_path: (PAPER, 0))
+    replies = _fake_chat([
+        _msg(_Call("set_targets", {"targets": [{"name": "band gap"}]})),
+        _msg(_Call("save_result", {"value": 2.65, "unit": "eV", "sample_name": "CN-550",
+                                   "evidence": "CN-550 showed a band gap of 2.65 eV"})),
+    ])
+
+    def chat(messages, tools=None, *, token_usage=None):
+        prompt_tokens = 100 if tools is agent.PLAN_TOOLS else 50
+        token_usage.record(SimpleNamespace(prompt_tokens=prompt_tokens, completion_tokens=10,
+                                           total_tokens=prompt_tokens + 10))
+        return replies(messages, tools)
+
+    monkeypatch.setattr(agent, "chat", chat)
+    # PDF conversion runs from 2 to 5, planning from 10 to 16, and extraction ends at 20.
+    clock = iter([2, 5, 10, 16, 17, 19, 20])
+    monkeypatch.setattr(agent, "perf_counter", lambda: next(clock))
+
+    agent.main([str(papers), "Find the band gap", "--output-dir", str(output)])
+
+    with (output / "cost_metrics.csv").open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert [(row["scope"], row["parameter"], float(row["elapsed_seconds"]), int(row["total_tokens"]))
+            for row in rows] == [("paper", "", 13, 170), ("planning", "", 6, 110), ("parameter", "band gap", 2, 60)]
 
 
 def test_rejected_result_is_retried_before_moving_on(monkeypatch):
@@ -238,7 +316,6 @@ def test_csv_has_value_range_error_columns(monkeypatch, tmp_path):
     monkeypatch.setattr(agent, "chat", _fake_chat(replies))
     agent.run_agent(PAPER2, "p2", "band gap and BET")
 
-    import csv
     with open(tmp_path / "p2_extraction.csv", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
     assert [(r["item"], r["value"], r["range"], r["error"], r["status"]) for r in rows] == [

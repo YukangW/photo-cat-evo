@@ -24,7 +24,7 @@ Output:
     results/paper_001_extraction.csv         the same as a table: item, value, range, error, unit,
                                              standard_value/_range/_error/_unit, sample, ...
     results/paper_001_extraction_trace.json  the plan, tool calls and extraction metrics
-    results/cost_metrics.csv                extraction time and tokens by paper and parameter (directory mode)
+    results/cost_metrics.csv                time and tokens by paper, planning stage and parameter (directory mode)
 """
 import argparse
 import csv
@@ -233,7 +233,7 @@ def _run_tool_calls(msg, tools, messages: list, trace: list, step: int):
 
 
 # ============================================================ 1. plan
-def plan_targets(prompt: str, params: dict | None = None) -> tuple[list, list]:
+def plan_targets(prompt: str, params: dict | None = None, *, token_usage: TokenUsage | None = None) -> tuple[list, list]:
     """Split the prompt into separate data items. Falls back to the whole prompt as one item."""
     params = load_parameters() if params is None else params
     plan = PlanTools(MAX_TARGETS)
@@ -245,7 +245,7 @@ def plan_targets(prompt: str, params: dict | None = None) -> tuple[list, list]:
     trace = []
 
     for step in range(1, 4):
-        msg = chat(messages, tools=PLAN_TOOLS)
+        msg = chat(messages, tools=PLAN_TOOLS, token_usage=token_usage)
         messages.append(_assistant_message(msg))
         if not msg.tool_calls:
             trace.append({"step": step, "text": msg.content})
@@ -412,13 +412,17 @@ def standardise_results(paper_text: str, prompt: str, results: list[dict], param
 
 
 def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
-              params: dict | None = None, doi: str | None = None, *, output_prefix: Path | None = None) -> dict:
+              params: dict | None = None, doi: str | None = None, *, output_prefix: Path | None = None,
+              pdf_conversion_elapsed: float = 0.0) -> dict:
     params = load_parameters() if params is None else params
     doi = doi or find_doi(paper_text)
     print(f"DOI: {doi or 'not found in the text (give it with --doi)'}")
     print(f"Request: {prompt}\nParameter dictionary: {len(params)} entries\n\nPlanning...")
-    targets, plan_trace = plan_targets(prompt, params)
+    paper_usage = TokenUsage()
+    planning_started = perf_counter()
+    targets, plan_trace = plan_targets(prompt, params, token_usage=paper_usage)
     targets = match_parameters(targets, params)
+    planning_metrics = {"elapsed_seconds": perf_counter() - planning_started, "token_usage": paper_usage.as_dict()}
     print(f"  {len(targets)} data item(s): " + "; ".join(_describe(t) for t in targets))
     for t in targets:
         if t["parameter"]:
@@ -428,8 +432,6 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
                     f"range check (add it with: uv run python -m PhotoCatEvo.parameters add ...)")
 
     results, item_traces, done_so_far, known_samples = [], [], [], []
-    paper_usage = TokenUsage()
-    extraction_started = perf_counter()
     for i, target in enumerate(targets, 1):
         print(f"\n[{i}/{len(targets)}] {_describe(target)}")
         result, trace, item_metrics = _extract_with_metrics(paper_text, target, prompt, done_so_far, params,
@@ -439,7 +441,7 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
         item_traces.append({"item": target["name"], "trace": trace, "metrics": item_metrics})
         done_so_far.append(_summary(target, result))
         known_samples += [n for n in _sample_names(result) if n not in known_samples]
-    extraction_elapsed = perf_counter() - extraction_started
+    planning_and_extraction_elapsed = perf_counter() - planning_started
 
     extracted_samples = {r["sample_name"] for r in results
                          if r.get("sample_name") and r["status"] in _EXTRACTED_STATUSES}
@@ -447,7 +449,7 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
     results, extra_traces = standardise_results(paper_text, prompt, results, params, done_so_far,
                                                paper=paper_name, doi=doi, paper_usage=paper_usage)
     supporting_elapsed = sum(item["metrics"]["elapsed_seconds"] for item in extra_traces)
-    metrics = {"elapsed_seconds": extraction_elapsed + supporting_elapsed,
+    metrics = {"elapsed_seconds": pdf_conversion_elapsed + planning_and_extraction_elapsed + supporting_elapsed,
                "parameters_attempted": len(item_traces),
                "parameters_extracted": sum(item["metrics"]["status"] in _EXTRACTED_STATUSES
                                            for item in item_traces),
@@ -461,7 +463,8 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
     with open(f"{output_prefix}_extraction.json", "w", encoding="utf-8") as f:
         json.dump(final, f, indent=2, ensure_ascii=False)
     with open(f"{output_prefix}_extraction_trace.json", "w", encoding="utf-8") as f:
-        json.dump({"plan": {"targets": targets, "trace": plan_trace}, "items": item_traces + extra_traces,
+        json.dump({"plan": {"targets": targets, "trace": plan_trace, "metrics": planning_metrics},
+                   "items": item_traces + extra_traces,
                    "metrics": metrics},
                   f, indent=2, ensure_ascii=False)
     _write_csv(f"{output_prefix}_extraction.csv", results)
@@ -470,6 +473,8 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
     print(f"  Whole paper: {metrics['parameters_attempted']} parameters attempted, "
           f"{metrics['parameters_extracted']} extracted, {metrics['sample_count']} samples, "
           f"{metrics['elapsed_seconds']:.2f} s, {_format_token_usage(metrics['token_usage'])}")
+    print(f"  Planning: {planning_metrics['elapsed_seconds']:.2f} s, "
+          f"{_format_token_usage(planning_metrics['token_usage'])}")
     labels = [_describe(target) for target in targets] + [item["item"] for item in extra_traces]
     for label, item in zip(labels, item_traces + extra_traces):
         item_metrics = item["metrics"]
@@ -480,10 +485,18 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
 
 def load_paper(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str]:
     """Return (text, name), optionally saving converted PDF text in text/."""
+    text, name, _ = _load_paper_with_timing(path, si_path, save_text=save_text)
+    return text, name
+
+
+def _load_paper_with_timing(path: str, si_path: str | None = None, *, save_text: bool = True) -> tuple[str, str, float]:
     name = os.path.splitext(os.path.basename(path))[0]
+    pdf_conversion_elapsed = 0.0
     if path.lower().endswith(".pdf"):
         from .pdf_to_text import convert          # needs pymupdf, only imported for PDFs
+        conversion_started = perf_counter()
         text, n_tables = convert(path, si_path)
+        pdf_conversion_elapsed = perf_counter() - conversion_started
         print(f"Converted PDF: {n_tables} tables found")
         if save_text:
             os.makedirs(TEXT_DIR, exist_ok=True)
@@ -492,11 +505,11 @@ def load_paper(path: str, si_path: str | None = None, *, save_text: bool = True)
     else:
         with open(path, encoding="utf-8") as f:
             text = f.read()
-    return text, name
+    return text, name, pdf_conversion_elapsed
 
 
 def _cost_rows(paper_name: str, trace: dict) -> list[tuple]:
-    entries = [("paper", "", trace["metrics"])]
+    entries = [("paper", "", trace["metrics"]), ("planning", "", trace["plan"]["metrics"])]
     entries.extend(("parameter", item["item"], item["metrics"]) for item in trace["items"])
     rows = []
     for scope, parameter, metrics in entries:
@@ -531,13 +544,14 @@ def _run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 
                 paper_name = relative_path.as_posix()
                 print(f"\n[{index}/{len(papers)}] {paper_name}")
                 try:
-                    text, _ = load_paper(str(path), save_text=False)
+                    text, _, pdf_conversion_elapsed = _load_paper_with_timing(str(path), save_text=False)
                 except Exception as exc:
                     print(f"Failed to process {paper_name}: {exc}", file=sys.stderr)
                     continue
 
                 output_prefix = batch_dir / "work" / str(index)
-                future = pool.submit(run_agent, text, paper_name, prompt, output_prefix=output_prefix)
+                future = pool.submit(run_agent, text, paper_name, prompt, output_prefix=output_prefix,
+                                     pdf_conversion_elapsed=pdf_conversion_elapsed)
                 pending[future] = (index, relative_path, output_prefix)
                 if len(pending) == workers:
                     break
@@ -606,10 +620,11 @@ def main(argv: list[str] | None = None) -> None:
         _run_directory(paper_path, args.prompt, args.output_dir, args.workers)
         return
 
-    text, name = load_paper(args.paper, args.si)
+    text, name, pdf_conversion_elapsed = _load_paper_with_timing(args.paper, args.si)
     print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
     output_prefix = args.output_dir / name
-    final = run_agent(text, name, args.prompt, doi=args.doi, output_prefix=output_prefix)
+    final = run_agent(text, name, args.prompt, doi=args.doi, output_prefix=output_prefix,
+                      pdf_conversion_elapsed=pdf_conversion_elapsed)
     print("\nFINAL RESULTS:")
     _print_table(final["results"])
     print(f"\nFull results (with evidence quotes): {output_prefix}_extraction.json and .csv")

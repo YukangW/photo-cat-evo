@@ -1,13 +1,14 @@
 """The only file that talks to the LLM (local vLLM or OpenRouter: same OpenAI-compatible API)."""
+import asyncio
 import time
 from dataclasses import asdict, dataclass
 
-from openai import APIConnectionError, APIStatusError, OpenAI
+from openai import APIConnectionError, APIStatusError, AsyncOpenAI
 from openai.types import CompletionUsage
 
 from .config import API_KEY, BASE_URL, MODEL, TEMPERATURE
 
-client = OpenAI(base_url=BASE_URL, api_key=API_KEY, timeout=300, max_retries=0)
+_REQUEST_TIMEOUT = 300
 
 # Worth retrying: timeouts, rate limits and server-side errors. Anything else (bad key, no credits,
 # unknown model, bad request) will fail the same way again, so stop straight away.
@@ -54,6 +55,12 @@ class TokenUsage:
         return counts
 
 
+async def _create_completion(**kwargs):
+    async with AsyncOpenAI(base_url=BASE_URL, api_key=API_KEY, timeout=_REQUEST_TIMEOUT, max_retries=0) as client:
+        async with asyncio.timeout(_REQUEST_TIMEOUT):
+            return await client.chat.completions.create(**kwargs)
+
+
 def chat(messages: list, tools: list | None = None, retries: int = 4, *,
          token_usage: TokenUsage | None = None):
     """Send the conversation, return the assistant message. Retries on rate limits / server errors."""
@@ -64,7 +71,7 @@ def chat(messages: list, tools: list | None = None, retries: int = 4, *,
     for attempt in range(retries):
         resp = None
         try:
-            resp = client.chat.completions.create(**kwargs)
+            resp = asyncio.run(_create_completion(**kwargs))
             if getattr(resp, "error", None):          # OpenRouter can put an error inside a 200 reply
                 raise RuntimeError(f"LLM returned an error: {resp.error}")
             if not resp.choices:
@@ -77,10 +84,12 @@ def chat(messages: list, tools: list | None = None, retries: int = 4, *,
             err = f"HTTP {e.status_code}: {str(e.message)[:300]}"
         except APIConnectionError as e:
             err = e.__class__.__name__
+        except TimeoutError:
+            err = f"Total request timeout ({_REQUEST_TIMEOUT:g}s)"
         finally:
             if token_usage is not None:
                 token_usage.record(getattr(resp, "usage", None))
         wait = 5 * 2 ** attempt          # 5, 10, 20, 40 s
-        print(f"  [llm] {err}. Retrying in {wait}s...")
+        print(f"  [llm] {err}. Retrying in {wait}s...", flush=True)
         time.sleep(wait)
     raise RuntimeError("LLM call failed after retries")
