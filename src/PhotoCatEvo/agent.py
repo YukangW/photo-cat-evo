@@ -34,15 +34,16 @@ import re
 import sys
 from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from contextvars import copy_context
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from shutil import copyfile
 from tempfile import TemporaryDirectory
 from time import perf_counter
 
-from .config import (DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, MODEL, RESULTS_DIR, TEXT_DIR,
-                     USE_PROMPT_CACHE)
-from .llm import TokenUsage, chat
+from .config import DEFAULT_PROMPT, MAX_STEPS, MAX_TARGETS, RESULTS_DIR, TEXT_DIR
+from .llm import TokenUsage, chat, model_settings
 from .organize import organize
 from .parameters import describe_for_extractor, describe_for_planner, find_parameter, load_parameters
 from .standardise import standardise
@@ -60,6 +61,7 @@ class PaperProgress:
     rows: list[dict] | None = None
     result_path: Path | None = None
     error: str | None = None
+    current_parameter: str | None = None
 
 
 PLANNER_PROMPT = """You turn a user's data-extraction request into a list of separate data items.
@@ -131,7 +133,7 @@ def _assistant_message(msg) -> dict:
 def _paper_message(paper_text: str) -> dict:
     """The paper itself. Kept identical across every request so the provider can cache it."""
     text = f"Paper text:\n\n{paper_text}"
-    if USE_PROMPT_CACHE:
+    if model_settings.get().use_prompt_cache:
         return {"role": "user",
                 "content": [{"type": "text", "text": text, "cache_control": {"type": "ephemeral"}}]}
     return {"role": "user", "content": text}
@@ -448,10 +450,11 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
                     f"range check (add it with: uv run python -m PhotoCatEvo.parameters add ...)")
 
     results, item_traces, done_so_far, known_samples = [], [], [], []
-    if on_progress:
-        on_progress(PaperProgress("extracting", completed=0, total=len(targets)))
     for i, target in enumerate(targets, 1):
         print(f"\n[{i}/{len(targets)}] {_describe(target)}")
+        if on_progress:
+            on_progress(PaperProgress("extracting", completed=i - 1, total=len(targets),
+                                      current_parameter=target["name"], rows=results.copy()))
         result, trace, item_metrics = _extract_with_metrics(paper_text, target, prompt, done_so_far, params,
                                                             paper_usage, known_samples)
         print(f"  => {_summary(target, result)[2:]}")
@@ -459,15 +462,13 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
         item_traces.append({"item": target["name"], "trace": trace, "metrics": item_metrics})
         done_so_far.append(_summary(target, result))
         known_samples += [n for n in _sample_names(result) if n not in known_samples]
-        if on_progress:
-            on_progress(PaperProgress("extracting", completed=i, total=len(targets), rows=results.copy()))
     planning_and_extraction_elapsed = perf_counter() - planning_started
 
     extracted_samples = {r["sample_name"] for r in results
                          if r.get("sample_name") and r["status"] in _EXTRACTED_STATUSES}
     print("\nStandardising units...")
     if on_progress:
-        on_progress(PaperProgress("standardizing", completed=len(targets), total=len(targets)))
+        on_progress(PaperProgress("standardizing", completed=len(targets), total=len(targets), rows=results.copy()))
     results, extra_traces = standardise_results(paper_text, prompt, results, params, done_so_far,
                                                paper=paper_name, doi=doi, paper_usage=paper_usage)
     supporting_elapsed = sum(item["metrics"]["elapsed_seconds"] for item in extra_traces)
@@ -477,7 +478,7 @@ def run_agent(paper_text: str, paper_name: str, prompt: str = DEFAULT_PROMPT,
                                            for item in item_traces),
                "sample_count": len(extracted_samples), "token_usage": paper_usage.as_dict()}
 
-    final = {"paper": paper_name, "doi": doi, "model": MODEL, "prompt": prompt,
+    final = {"paper": paper_name, "doi": doi, "model": model_settings.get().model, "prompt": prompt,
              "samples": known_samples, "results": results}
 
     output_prefix = output_prefix or Path(RESULTS_DIR) / paper_name
@@ -556,7 +557,7 @@ def run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 1
         raise ValueError(f"No PDF or TXT files found in '{folder}'.")
 
     results_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Model: {MODEL}\nResults directory: {results_dir}")
+    print(f"Model: {model_settings.get().model}\nResults directory: {results_dir}")
     cost_rows = {}
     index_width = max(4, len(str(len(papers))))
     inputs = iter(enumerate(papers, start=1))
@@ -579,10 +580,9 @@ def run_directory(folder: Path, prompt: str, results_dir: Path, workers: int = 1
                     continue
 
                 output_prefix = batch_dir / "work" / str(index)
-                if on_paper_progress:
-                    on_paper_progress(paper_name, PaperProgress("extracting"))
-                future = pool.submit(run_agent, text, paper_name, prompt, output_prefix=output_prefix,
-                                     pdf_conversion_elapsed=pdf_conversion_elapsed)
+                report = partial(on_paper_progress, paper_name) if on_paper_progress else None
+                future = pool.submit(copy_context().run, run_agent, text, paper_name, prompt, output_prefix=output_prefix,
+                                     pdf_conversion_elapsed=pdf_conversion_elapsed, on_progress=report)
                 pending[future] = (index, relative_path, output_prefix)
                 if len(pending) == workers:
                     break
@@ -666,7 +666,7 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     text, name, pdf_conversion_elapsed = load_paper_with_timing(args.paper, args.si)
-    print(f"Model: {MODEL}\nPaper: {name} ({len(text):,} chars)\n")
+    print(f"Model: {model_settings.get().model}\nPaper: {name} ({len(text):,} chars)\n")
     output_prefix = args.output_dir / name
     final = run_agent(text, name, args.prompt, doi=args.doi, output_prefix=output_prefix,
                       pdf_conversion_elapsed=pdf_conversion_elapsed)

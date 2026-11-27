@@ -11,6 +11,8 @@ from threading import Event
 from uuid import uuid4
 
 from .agent import PaperProgress, load_paper_with_timing, run_agent, run_directory
+from .config import BASE_URL, MODEL
+from .llm import ModelSettings, model_settings
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     mode TEXT NOT NULL,
     prompt TEXT NOT NULL,
     has_si INTEGER NOT NULL,
+    settings_json TEXT NOT NULL DEFAULT '{}',
     status TEXT NOT NULL DEFAULT 'queued',
     stage TEXT,
     created_at TEXT NOT NULL,
@@ -35,6 +38,7 @@ CREATE TABLE IF NOT EXISTS job_papers (
     stage TEXT,
     completed INTEGER,
     total INTEGER,
+    current_parameter TEXT,
     preview_json TEXT,
     result_path TEXT,
     error TEXT,
@@ -61,9 +65,13 @@ class ExtractionJobs:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.executescript(SCHEMA)
+            if not any(column["name"] == "settings_json" for column in db.execute("PRAGMA table_info(jobs)")):
+                db.execute("ALTER TABLE jobs ADD COLUMN settings_json TEXT NOT NULL DEFAULT '{}'")
+            if not any(column["name"] == "current_parameter" for column in db.execute("PRAGMA table_info(job_papers)")):
+                db.execute("ALTER TABLE job_papers ADD COLUMN current_parameter TEXT")
             error = "The service stopped before this extraction finished."
             db.execute("""
-                UPDATE job_papers SET status = 'interrupted', stage = NULL, error = ?
+                UPDATE job_papers SET status = 'interrupted', stage = NULL, current_parameter = NULL, error = ?
                 WHERE status IN ('queued', 'running')
                 AND job_id IN (SELECT id FROM jobs WHERE status = 'running')
             """, (error,))
@@ -75,10 +83,13 @@ class ExtractionJobs:
     def directory(self, job_id: str) -> Path:
         return self.data_dir / "jobs" / job_id
 
-    def enqueue(self, job_id: str, mode: str, prompt: str, paths: list[str], has_si: bool) -> None:
+    def enqueue(self, job_id: str, mode: str, prompt: str, paths: list[str], has_si: bool, *,
+                base_url: str = BASE_URL, model: str = MODEL, workers: int | None = None) -> None:
+        settings = json.dumps({"base_url": base_url, "model": model, "workers": workers or self.workers})
         with self.connect() as db:
-            db.execute("INSERT INTO jobs (id, mode, prompt, has_si, created_at) VALUES (?, ?, ?, ?, ?)",
-                       (job_id, mode, prompt, has_si, datetime.now(UTC).isoformat()))
+            db.execute("""
+                INSERT INTO jobs (id, mode, prompt, has_si, created_at, settings_json) VALUES (?, ?, ?, ?, ?, ?)
+            """, (job_id, mode, prompt, has_si, datetime.now(UTC).isoformat(), settings))
             db.executemany("INSERT INTO job_papers (id, job_id, relative_path) VALUES (?, ?, ?)",
                            [(uuid4().hex, job_id, path) for path in paths])
         self.wakeup.set()
@@ -106,16 +117,16 @@ class ExtractionJobs:
         stage = progress.stage
         status = stage if stage in {"succeeded", "failed"} else "running"
         result = progress.result_path.relative_to(job_dir).as_posix() if progress.result_path else None
-        preview = json.dumps(progress.rows, ensure_ascii=False) if progress.rows is not None else None
+        preview = json.dumps(progress.rows, ensure_ascii=False) if job["mode"] == "single" and progress.rows is not None else None
         error = progress.error.replace(str(job_dir), ".") if progress.error else None
         with self.connect() as db:
             db.execute("""
-                UPDATE job_papers SET status = ?, stage = ?,
+                UPDATE job_papers SET status = ?, stage = ?, current_parameter = ?,
                     completed = COALESCE(?, completed), total = COALESCE(?, total),
                     preview_json = CASE WHEN ? IS NOT NULL THEN NULL ELSE COALESCE(?, preview_json) END,
                     result_path = ?, error = ?
                 WHERE id = ?
-            """, (status, stage if status == "running" else None, progress.completed, progress.total,
+            """, (status, stage if status == "running" else None, progress.current_parameter, progress.completed, progress.total,
                   result, preview, result, error, paper_id))
             if job["mode"] == "single" and status == "running":
                 db.execute("UPDATE jobs SET stage = ? WHERE id = ?", (stage, job["id"]))
@@ -128,14 +139,14 @@ class ExtractionJobs:
         with self.connect() as db:
             if status == "failed":
                 db.execute("""
-                    UPDATE job_papers SET status = 'failed', stage = NULL, error = ?
+                    UPDATE job_papers SET status = 'failed', stage = NULL, current_parameter = NULL, error = ?
                     WHERE job_id = ? AND status IN ('queued', 'running')
                 """, (error, job_id))
             db.execute("""
                 UPDATE jobs SET status = ?, stage = NULL, finished_at = ?, error = ? WHERE id = ?
             """, (status, datetime.now(UTC).isoformat(), error, job_id))
 
-    def _run(self, job: sqlite3.Row) -> None:
+    def _run(self, job: sqlite3.Row, workers: int) -> None:
         job_id = job["id"]
         job_dir = self.directory(job_id)
         input_dir, output_dir = job_dir / "input", job_dir / "output"
@@ -171,7 +182,7 @@ class ExtractionJobs:
         def report_batch(path: str, progress: PaperProgress) -> None:
             self._paper_progress(job, paper_ids[path.casefold()], progress)
 
-        succeeded, failed = run_directory(input_dir, job["prompt"], output_dir, self.workers,
+        succeeded, failed = run_directory(input_dir, job["prompt"], output_dir, workers,
                                           on_paper_progress=report_batch,
                                           on_summarizing=lambda: self._summarizing(job_id))
         if not succeeded:
@@ -188,7 +199,13 @@ class ExtractionJobs:
                     self.wakeup.wait(1)
                     continue
                 try:
-                    self._run(job)
+                    settings = json.loads(job["settings_json"])
+                    token = model_settings.set(ModelSettings(settings.get("base_url", BASE_URL),
+                                                             settings.get("model", MODEL)))
+                    try:
+                        self._run(job, settings.get("workers", self.workers))
+                    finally:
+                        model_settings.reset(token)
                 except (Exception, SystemExit):
                     log.exception("Extraction job %s failed", job["id"])
                     self._finish(job["id"], "failed", "The extraction could not finish.")

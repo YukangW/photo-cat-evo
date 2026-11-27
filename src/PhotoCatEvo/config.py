@@ -14,10 +14,6 @@ MODEL = os.getenv("LLM_MODEL", "Qwen/Qwen3.5-9B")
 _temp = os.getenv("LLM_TEMPERATURE", "0")
 TEMPERATURE = None if _temp.lower() == "none" else float(_temp)
 
-# Let the provider cache the paper text between requests (Anthropic models on OpenRouter only).
-# The whole paper is resent on every step of every data item, so caching cuts the cost a lot.
-USE_PROMPT_CACHE = "openrouter.ai" in BASE_URL and MODEL.startswith("anthropic/")
-
 MAX_STEPS = 8            # max agent loop steps PER DATA ITEM (protects your request limit)
 MAX_TARGETS = 10         # max number of separate data items taken from one prompt
 

@@ -7,27 +7,38 @@ from collections import Counter
 from contextlib import asynccontextmanager
 from pathlib import Path, PurePosixPath
 from shutil import copyfileobj, rmtree
+from tempfile import TemporaryDirectory
 from threading import Event, Thread
 from typing import Annotated, Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
-from pydantic import BaseModel
+from fastapi.responses import FileResponse
+from pydantic import AnyHttpUrl, BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from .config import DEFAULT_PROMPT
+from .config import BASE_URL, MODEL
 from .jobs import ExtractionJobs
+from .organize import organize
 
 Mode = Literal["single", "directory"]
 PaperState = Literal["queued", "running", "succeeded", "failed", "interrupted"]
 JobState = Literal["queued", "running", "succeeded", "partial_success", "failed", "interrupted"]
 router = APIRouter(prefix="/api/extractions")
+DEFAULT_PROMPT = "Find the band gap and BET surface area."
 
 
 class SubmittedJob(BaseModel):
     job_id: str
     status: Literal["queued"] = "queued"
     status_url: str
+
+
+class ExtractionDefaults(BaseModel):
+    base_url: str
+    model: str
+    workers: int
+    prompt: str
 
 
 class PaperStatus(BaseModel):
@@ -37,6 +48,7 @@ class PaperStatus(BaseModel):
     stage: str | None
     parameters_completed: int | None
     parameters_total: int | None
+    current_parameter: str | None = None
     error: str | None
 
 
@@ -88,6 +100,12 @@ def _save_file(upload: UploadFile, target: Path) -> None:
         copyfileobj(upload.file, out)
 
 
+@router.get("/defaults")
+def extraction_defaults(request: Request) -> ExtractionDefaults:
+    return ExtractionDefaults(base_url=BASE_URL, model=MODEL,
+                              workers=request.app.state.jobs.workers, prompt=DEFAULT_PROMPT)
+
+
 @router.post("", status_code=202)
 def submit_extraction(
     request: Request, response: Response,
@@ -96,6 +114,9 @@ def submit_extraction(
     prompt: Annotated[str, Form()] = DEFAULT_PROMPT,
     relative_paths: Annotated[list[str] | None, Form()] = None,
     si: Annotated[UploadFile | None, File()] = None,
+    base_url: Annotated[AnyHttpUrl | None, Form()] = None,
+    model: Annotated[str | None, Form()] = None,
+    workers: Annotated[int | None, Form(ge=1)] = None,
 ) -> SubmittedJob:
     if mode == "single":
         if len(files) != 1 or relative_paths is not None:
@@ -127,7 +148,9 @@ def submit_extraction(
             _save_file(upload, job_dir / "input" / path)
         if si is not None:
             _save_file(si, job_dir / "supporting.pdf")
-        jobs.enqueue(job_id, mode, prompt.strip() or DEFAULT_PROMPT, [path.as_posix() for path in paths], si is not None)
+        jobs.enqueue(job_id, mode, prompt.strip() or DEFAULT_PROMPT, [path.as_posix() for path in paths], si is not None,
+                     base_url=str(base_url).rstrip("/") if base_url else BASE_URL,
+                     model=(model or "").strip() or MODEL, workers=workers)
     except Exception:
         rmtree(job_dir, ignore_errors=True)
         raise
@@ -173,11 +196,37 @@ def get_extraction(request: Request, response: Response, job_id: str, paper_id: 
         papers=[
             PaperStatus(paper_id=paper["id"], path=paper["relative_path"], status=paper["status"],
                         stage=paper["stage"], parameters_completed=paper["completed"],
-                        parameters_total=paper["total"], error=paper["error"])
+                        parameters_total=paper["total"], current_parameter=paper["current_parameter"],
+                        error=paper["error"])
             for paper in papers
         ],
         paper=paper_result,
     )
+
+
+@router.get("/{job_id}/all_samples.csv", response_class=Response)
+def download_samples(request: Request, job_id: str) -> Response:
+    jobs: ExtractionJobs = request.app.state.jobs
+    job, _ = jobs.snapshot(job_id)
+    if job is None:
+        raise HTTPException(404, "Extraction job not found.")
+    if job["status"] not in {"succeeded", "partial_success"}:
+        raise HTTPException(409, "The job has no completed sample summary.")
+
+    summary = jobs.directory(job_id) / "output" / "all_samples.csv"
+    if summary.is_file():
+        return FileResponse(summary, media_type="text/csv", filename=summary.name)
+    if job["mode"] != "single":
+        raise HTTPException(404, "Sample summary not found.")
+
+    with TemporaryDirectory() as directory:
+        csv_path = Path(directory) / summary.name
+        try:
+            organize(str(summary.parent), str(csv_path), recursive=False)
+        except SystemExit as exc:
+            raise HTTPException(404, "Sample summary not found.") from exc
+        return Response(csv_path.read_bytes(), media_type="text/csv",
+                        headers={"Content-Disposition": f'attachment; filename="{summary.name}"'})
 
 
 def create_app(data_dir: Path | None = None, workers: int | None = None) -> FastAPI:

@@ -277,10 +277,12 @@ Open `http://127.0.0.1:8001/docs` to try the endpoints.
 - `POST /api/extractions` accepts multipart form data and returns HTTP 202 with `job_id` and `status_url`.
   Single mode accepts one `files` part with a PDF or TXT, and an optional `si` PDF for a PDF paper.
   Directory mode requires `mode=directory` and one `relative_paths` part per `files` part, in the same order.
-  Both modes accept an optional `prompt`.
+  Both modes accept an optional `prompt` and per-job `base_url`, `model`, and `workers` overrides.
+- `GET /api/extractions/defaults` reports the backend defaults for the prompt, model settings, and worker count.
 - `GET /api/extractions/{job_id}` returns job and per-paper progress. A single paper's result is included
   as it becomes available. For directory jobs, add `?paper_id=<id>` to read a completed paper's results.
   Stop polling on `succeeded`, `partial_success`, `failed`, or `interrupted`.
+- `GET /api/extractions/{job_id}/all_samples.csv` downloads the sample summary for a completed job.
 
 ```bash
 curl -F 'files=@paper.pdf' -F 'prompt=Find the band gap' http://127.0.0.1:8001/api/extractions
@@ -295,3 +297,22 @@ Set `PHOTOCATEVO_DATA_DIR` to put them elsewhere. Each job keeps its extraction 
 `jobs/<job_id>/output/`, along with `all_samples.csv` and `cost_metrics.csv` for directory jobs
 with successful papers. A normal shutdown waits for the active job. After an unexpected stop,
 queued jobs run on the next start, and interrupted jobs retain their completed results.
+
+## Gradio prototype
+
+Start the FastAPI service first, then launch the frontend from a second terminal at the repository root.
+
+```bash
+uv run --locked --extra ui python -m PhotoCatEvo.ui
+```
+
+Open `http://127.0.0.1:7860`. Click the upload area in **Papers** and select **Choose files** or **Choose folder**.
+Folder uploads preserve relative paths for PDFs and TXT files.
+Enter a model service Base URL,
+choose a Qwen preset or type a custom model ID, and set **Extraction threads** to the number of papers
+the job can extract concurrently. **Extraction threads** starts at 1. The prompt and model settings start with the backend defaults.
+The backend uses its configured API key for its configured model endpoint.
+The page polls the API once per second. The Status panel shows each paper's stage and current parameter.
+Results are shown with evidence as they become available.
+Click **Download CSV** when extraction completes to save `all_samples.csv`.
+Set `PHOTOCATEVO_API_URL` if the API is running at an address other than `http://127.0.0.1:8001`.

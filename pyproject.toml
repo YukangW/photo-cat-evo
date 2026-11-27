@@ -13,6 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.115", "python-multipart>=0.0.20", "uvicorn>=0.34"]
+ui = ["gradio>=6,<7"]
 
 [project.scripts]
 PhotoCatEvo = "PhotoCatEvo.agent:main"

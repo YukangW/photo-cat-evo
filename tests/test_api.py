@@ -1,3 +1,4 @@
+import json
 import time
 from threading import Event
 
@@ -10,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from PhotoCatEvo.api import create_app
 from PhotoCatEvo.jobs import ExtractionJobs
+from PhotoCatEvo.llm import model_settings
 
 
 def test_health(tmp_path):
@@ -63,7 +65,9 @@ def test_single_returns_preview_then_standardized_result(tmp_path, monkeypatch, 
     extraction(["band gap", "second item"], before_extract)
     monkeypatch.setattr(pdf_to_text, "convert", convert)
     with TestClient(create_app(tmp_path)) as client:
-        response = client.post("/api/extractions", files=[
+        default_prompt = client.get("/api/extractions/defaults").json()["prompt"]
+        assert default_prompt == "Find the band gap and BET surface area."
+        response = client.post("/api/extractions", data={"prompt": " "}, files=[
             ("files", ("paper.pdf", b"mock PDF")), ("si", ("supplement.pdf", b"mock SI")),
         ])
         assert response.status_code == 202
@@ -71,8 +75,10 @@ def test_single_returns_preview_then_standardized_result(tmp_path, monkeypatch, 
         assert response.json()["status_url"] == url
         try:
             state = _wait_for(client, url, lambda state: state["papers"][0]["parameters_completed"] == 1)
+            assert state["papers"][0]["current_parameter"] == "second item"
             preview = state["paper"]
             assert preview["partial"] and preview["results"][0]["evidence"]
+            assert client.get(f"{url}/all_samples.csv").status_code == 409
         finally:
             release.set()
         finished = _wait_for(client, url, lambda state: state["status"] == "succeeded")
@@ -82,12 +88,22 @@ def test_single_returns_preview_then_standardized_result(tmp_path, monkeypatch, 
         assert final["results"][0]["row_id"] == preview["results"][0]["row_id"]
         assert final["results"][0]["standard_value"] == 2.65
         assert final["metrics"]["parameters_attempted"] == 2
+        output = tmp_path / "jobs" / finished["job_id"] / "output" / "paper_extraction.json"
+        assert json.loads(output.read_text(encoding="utf-8"))["prompt"] == default_prompt
+        summary = client.get(f"{url}/all_samples.csv")
+        assert summary.status_code == 200
+        assert summary.headers["content-disposition"] == 'attachment; filename="all_samples.csv"'
+        assert summary.content.decode("utf-8-sig").splitlines()[0].startswith("paper,doi,sample_name,band gap")
+        assert "CN-550,2.65,eV" in summary.text
 
 
 def test_directory_publishes_results_during_parallel_extraction(tmp_path, extraction):
     slow_started, release = Event(), Event()
 
     def before_extract(text, name):
+        settings = model_settings.get()
+        assert settings.base_url == "http://127.0.0.1:9000/v1"
+        assert settings.model == "custom-model"
         if text == "slow":
             slow_started.set()
             assert release.wait(5)
@@ -95,9 +111,11 @@ def test_directory_publishes_results_during_parallel_extraction(tmp_path, extrac
             assert slow_started.wait(5)
 
     extraction(["band gap"], before_extract)
-    with TestClient(create_app(tmp_path, workers=2)) as client:
+    with TestClient(create_app(tmp_path, workers=1)) as client:
+        assert client.get("/api/extractions/defaults").json()["workers"] == 1
         response = client.post("/api/extractions", data={
             "mode": "directory", "relative_paths": ["batch/a.txt", "batch/sub/b.txt", "batch/c.txt"],
+            "base_url": "http://127.0.0.1:9000/v1", "model": "custom-model", "workers": 2,
         }, files=[
             ("files", ("a.txt", b"fast")), ("files", ("b.txt", b"slow")), ("files", ("c.txt", b"\xff")),
         ])
@@ -109,16 +127,23 @@ def test_directory_publishes_results_during_parallel_extraction(tmp_path, extrac
             assert state["paper"] is None
             paper = next(paper for paper in state["papers"] if paper["status"] == "succeeded")
             assert paper["path"] == "batch/a.txt"
+            slow = next(paper for paper in state["papers"] if paper["path"] == "batch/sub/b.txt")
+            assert slow["stage"] == "extracting"
+            assert slow["current_parameter"] == "band gap"
+            assert (slow["parameters_completed"], slow["parameters_total"]) == (0, 1)
             detail = client.get(url, params={"paper_id": paper["paper_id"]}).json()
             assert detail["paper"]["results"][0]["value"] == 2.65
         finally:
             release.set()
         finished = _wait_for(client, url, lambda state: state["status"] == "partial_success")
         assert finished["progress"] == {"total": 3, "succeeded": 2, "failed": 1, "interrupted": 0}
+        assert all(paper["current_parameter"] is None for paper in finished["papers"])
         assert next(paper for paper in finished["papers"] if paper["status"] == "failed")["error"]
         assert client.get(url, params={"paper_id": "missing"}).status_code == 404
         output = tmp_path / "jobs" / finished["job_id"] / "output"
-        assert (output / "all_samples.csv").is_file()
+        summary = client.get(f"{url}/all_samples.csv")
+        assert summary.status_code == 200
+        assert summary.content == (output / "all_samples.csv").read_bytes()
         assert (output / "cost_metrics.csv").is_file()
 
 
